@@ -27,7 +27,8 @@ public class JWTUtils {
 
         //把用户id保存到subject变量，也可以使用.withClaim("userId", 123)
         JWTCreator.Builder builder = JWT.create();
-        builder.withSubject(u.getUser());
+//        builder.withSubject(u.getUser());
+        builder.withClaim("userId", u.getUser());
 
         return builder.withExpiresAt(instance.getTime())
                 .sign(Algorithm.HMAC256(password));

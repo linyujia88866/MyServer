@@ -4,6 +4,10 @@ import cn.aqjyxt.bean.JWTUtils;
 import cn.aqjyxt.bean.Returnben;
 import cn.aqjyxt.entity.UserDto;
 import cn.aqjyxt.entity.aqjyxt_user;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
@@ -11,9 +15,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
 
 @RestController
+@Slf4j
 public class MyController {
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @PostMapping("login")
     @ResponseBody
@@ -21,7 +31,7 @@ public class MyController {
         Returnben returnben = new Returnben();
         String user = userDto.getUser();
         String password = userDto.getPassword();
-        System.out.println(user);
+        log.info(user);
         if(!Objects.equals(user, "LiYan") || !Objects.equals(password, "9802")){
             returnben.setMsg("失败");
             returnben.setSuccess("500");
@@ -34,6 +44,9 @@ public class MyController {
         returnben.setData(token);
         returnben.setMsg("成功");
         returnben.setSuccess("200");
+        // 存储Token到Redis，假设用户名作为key
+        redisTemplate.opsForValue().set(user, token, 30, TimeUnit.MINUTES);
+
 
         // 创建一个cookie
         Cookie myCookie = new Cookie("token", token);
@@ -58,6 +71,28 @@ public class MyController {
         returnben.setData("success");
         returnben.setMsg("成功");
         returnben.setSuccess("200");
+        return returnben;
+    }
+
+    @PostMapping("/logout")
+    @ResponseBody
+//    @ApiOperation("登录接口")
+    public Returnben logout(HttpServletRequest request, HttpSession session) {
+        Returnben returnben = new Returnben();
+        String token=getTokenFromRequest(request);
+        log.info("解析token");
+        String userId = JWTUtils.parseJWT(token);
+        try {
+            redisTemplate.delete(userId);
+            returnben.setData("success");
+            returnben.setMsg("成功");
+            returnben.setSuccess("200");
+        }catch (Exception e){
+            returnben.setData("failed");
+            returnben.setMsg("登出失败");
+            returnben.setSuccess("500");
+        }
+
         return returnben;
     }
 
