@@ -2,7 +2,6 @@ package cn.aqjyxt.Interceptor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -28,6 +27,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         l.add("/api/**");
         l.add("/js/**");
         l.add("/error");
+        l.add("/student/**");
         l.add("/ws");
         l.add("/index.html");
         l.add("favicon.ico");
