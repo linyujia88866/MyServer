@@ -39,10 +39,6 @@ public class UserController {
             return Result.error(333, "身份证号码校验失败！");
         }
         String psw = user.getPassword();
-        log.info("用户名" + uname);
-        log.info("密码" + psw);
-        log.info("身份证" + String.valueOf(id));
-        log.info(String.valueOf(user));
         User byid =  userService.findById(id);
         User byuser =  userService.findByUser(uname);
         //查询数据库判断该用户是否存在

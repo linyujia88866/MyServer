@@ -30,7 +30,6 @@ public class MyController {
         Returnben returnben = new Returnben();
         String user = userDto.getUser();
         String password = userDto.getPassword();
-        log.info(user);
         if(!Objects.equals(user, "LiYan") || !Objects.equals(password, "9802")){
             returnben.setMsg("失败");
             returnben.setSuccess("500");
@@ -75,11 +74,9 @@ public class MyController {
 
     @PostMapping("/logout")
     @ResponseBody
-//    @ApiOperation("登录接口")
     public Returnben logout(HttpServletRequest request, HttpSession session) {
         Returnben returnben = new Returnben();
         String token=getTokenFromRequest(request);
-        log.info("解析token");
         String userId = JWTUtils.parseJWT(token);
         try {
             redisTemplate.delete(userId);
