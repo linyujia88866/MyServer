@@ -28,6 +28,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         l.add("/js/**");
         l.add("/error");
         l.add("/student/**");
+        l.add("/user/**");
         l.add("/ws");
         l.add("/index.html");
         l.add("favicon.ico");

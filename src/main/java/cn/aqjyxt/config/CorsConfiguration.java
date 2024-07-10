@@ -1,5 +1,6 @@
 package cn.aqjyxt.config;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -12,7 +13,7 @@ public class CorsConfiguration {
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(CorsRegistry registry) {
+            public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins("http://47.109.79.50:8080", "http://localhost:8082") // 允许所有源访问，可以指定具体的源
                         .allowedMethods("GET", "POST", "PUT", "DELETE") // 允许的请求方法
