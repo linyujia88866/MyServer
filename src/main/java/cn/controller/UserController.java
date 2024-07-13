@@ -32,7 +32,7 @@ public class UserController {
         try {
             isValid=isValidCardId(String.valueOf(id));
         }catch (Exception e){
-            log.info(String.valueOf(e));
+            log.info(e.getMessage());
             return Result.error(333, "身份证号码校验失败！");
         }
         if(!isValid){

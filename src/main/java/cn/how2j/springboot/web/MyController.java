@@ -72,7 +72,7 @@ public class MyController {
 //        myCookie.setPath("/");
         // 设置cookie到response中
         response.addCookie(myCookie);
-        log.info("设置token到cookie中");
+        log.info("set token to cookies");
         return returnben;
 
     }
