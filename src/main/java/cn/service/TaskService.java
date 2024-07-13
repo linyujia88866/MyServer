@@ -31,4 +31,9 @@ public class TaskService {
     public void saveTask(String taskId, String title, Timestamp createdAt, String content) {
         taskMapper.add(taskId, title,createdAt,content);
     }
+
+
+    public int updateTask(String taskId, String title, Timestamp createdAt, String content) {
+        return taskMapper.update(taskId, title,createdAt,content);
+    }
 }

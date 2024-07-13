@@ -37,7 +37,7 @@ public class TaskController {
      */
     @PostMapping("/save")
     @ResponseBody
-    public Result save (HttpServletRequest request, HttpSession session, HttpServletResponse response, @RequestBody TaskDto taskdto) {
+    public Result save (@RequestBody TaskDto taskdto) {
         String taskId = UuidUtil.getUuid();
         String title = taskdto.getTitle();
 
@@ -51,6 +51,19 @@ public class TaskController {
         return Result.success(taskId);
     }
 
+    @PostMapping("/update/{taskId}")
+    @ResponseBody
+    public Result update (@RequestBody TaskDto taskdto, @PathVariable String taskId) {
+        String title = taskdto.getTitle();
+        long currentTimeMillis = System.currentTimeMillis();
+        // 将当前时间戳转换为java.sql.Timestamp
+        Timestamp timestamp = new Timestamp(currentTimeMillis);
+        String content = taskdto.getContent();
+        int res = taskService.updateTask(taskId, title, timestamp, content);
+        log.info("保存任务{}成功！", taskId);
+        return Result.success(res);
+    }
+
     @GetMapping("/tasks")
     @ResponseBody
     public Result getAllTasks(){
@@ -59,7 +72,7 @@ public class TaskController {
     }
 
 
-    @GetMapping("/{taskId}")
+    @GetMapping("/get/{taskId}")
     @ResponseBody
     public Result getTaskById(@PathVariable("taskId") String taskId){
         Task res =  taskService.findById(taskId);
