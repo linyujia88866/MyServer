@@ -11,6 +11,7 @@ import cn.how2j.springboot.service.ProductService;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
+@RequestMapping(value = "/api")
 public class ProductController {
  
 	@Autowired ProductService productService;

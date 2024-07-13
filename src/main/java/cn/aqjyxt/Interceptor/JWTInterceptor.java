@@ -7,6 +7,7 @@ import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -25,12 +26,11 @@ public class JWTInterceptor implements HandlerInterceptor {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        log.info(request.getRequestURI());
+    public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) throws Exception {
+        log.info("request url is {}", request.getRequestURI());
         Returnben returnben = new Returnben();
         String token = getTokenFromRequest(request);
         try {
-            log.info("解析token");
             String userId = JWTUtils.parseJWT(token);
 
             String tokenStored = redisTemplate.opsForValue().get(userId);
@@ -40,20 +40,20 @@ public class JWTInterceptor implements HandlerInterceptor {
             }
             return true;
         } catch (SignatureVerificationException e){
-            e.printStackTrace();
+            log.info("SignatureVerificationException: {}", e.getMessage());
             returnben.setMsg("无效签名");
             returnben.setSuccess("10001");
         } catch (TokenExpiredException e){
-            e.printStackTrace();
+            log.info("TokenExpiredException: {}", e.getMessage());
             returnben.setMsg("token过期");
             returnben.setSuccess("10002");
         } catch (AlgorithmMismatchException e){
-            e.printStackTrace();
+            log.info("AlgorithmMismatchException: {}", e.getMessage());
             //token算法不一致
             returnben.setMsg("无效签名");
             returnben.setSuccess("10001");
         } catch (Exception e){
-            e.printStackTrace();
+            log.info("Other exception: {}", e.getMessage());
             returnben.setMsg("token无效");
             returnben.setSuccess("10003");
         }
@@ -65,7 +65,7 @@ public class JWTInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler, Exception ex) throws Exception {
         // 进行清理工作，不要修改response状态
     }
 

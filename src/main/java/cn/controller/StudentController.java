@@ -13,7 +13,7 @@ import javax.annotation.Resource;
  * @Description: 学生表控制类
  */
 @RestController
-@RequestMapping("/student")
+@RequestMapping("/api/student")
 public class StudentController {
     @Resource
     private StudentService studentService;

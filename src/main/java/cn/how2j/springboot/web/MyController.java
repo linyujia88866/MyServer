@@ -4,6 +4,10 @@ import cn.aqjyxt.bean.JWTUtils;
 import cn.aqjyxt.bean.Returnben;
 import cn.aqjyxt.entity.UserDto;
 import cn.aqjyxt.entity.aqjyxt_user;
+import cn.entity.User;
+import cn.hutool.core.lang.Assert;
+import cn.result.Result;
+import cn.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -20,27 +24,39 @@ import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
 
 @RestController
 @Slf4j
+@RequestMapping(value = "/api")
 public class MyController {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    @PostMapping("login")
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/login")
     @ResponseBody
     public Returnben login(HttpServletRequest request, HttpServletResponse response, HttpSession session, @RequestBody UserDto userDto ) {
         Returnben returnben = new Returnben();
         String user = userDto.getUser();
         String password = userDto.getPassword();
-        if(!Objects.equals(user, "LiYan") || !Objects.equals(password, "9802")){
-            returnben.setMsg("失败");
+        try {
+            User userFromDataBase = userService.findByUser(user);
+            if(!Objects.equals(password, userFromDataBase.getPassword())){
+                returnben.setMsg("账号或密码错误");
+                returnben.setSuccess("500");
+                return returnben;
+            }
+        } catch (Exception e) {
+            returnben.setMsg("账号或密码错误");
             returnben.setSuccess("500");
             return returnben;
         }
+
         aqjyxt_user aqjyxt_user = new aqjyxt_user();
         aqjyxt_user.setUser(user);
         aqjyxt_user.setPassword(password);
         String token = JWTUtils.getToken(aqjyxt_user);
-        returnben.setData(token);
-        returnben.setMsg("成功");
+        returnben.setData("The token is already set in Cookies");
+        returnben.setMsg("登录成功");
         returnben.setSuccess("200");
         // 存储Token到Redis，假设用户名作为key
         redisTemplate.opsForValue().set(user, token, 30, TimeUnit.MINUTES);
@@ -54,16 +70,15 @@ public class MyController {
 
         // 设置cookie的路径，这样只有访问这个路径时才会发送cookie
 //        myCookie.setPath("/");
-
         // 设置cookie到response中
         response.addCookie(myCookie);
+        log.info("设置token到cookie中");
         return returnben;
 
     }
 
     @PostMapping("/verify")
     @ResponseBody
-//    @ApiOperation("登录接口")
     public Returnben verify(HttpServletRequest request, HttpSession session) {
         Returnben returnben = new Returnben();
         returnben.setData("success");

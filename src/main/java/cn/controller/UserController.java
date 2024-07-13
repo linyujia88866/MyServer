@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import static cn.utils.TestCard.isValidCardId;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 @CrossOrigin //解决跨域问题
 @Slf4j
 public class UserController {
@@ -28,7 +28,7 @@ public class UserController {
     public Result register (@RequestBody User user) {
         String uname = user.getUsername();
         String id = user.getId();
-        boolean isValid=false;
+        boolean isValid;
         try {
             isValid=isValidCardId(String.valueOf(id));
         }catch (Exception e){
@@ -39,10 +39,10 @@ public class UserController {
             return Result.error(333, "身份证号码校验失败！");
         }
         String psw = user.getPassword();
-        User byid =  userService.findById(id);
+        User byId =  userService.findById(id);
         User byuser =  userService.findByUser(uname);
         //查询数据库判断该用户是否存在
-        if (byid != null){
+        if (byId != null){
             return Result.error(333, "身份证号码已被注册！");
         } else if(byuser!=null){
             //不存在则注册成功，将用户名和密码添加到数据库中
