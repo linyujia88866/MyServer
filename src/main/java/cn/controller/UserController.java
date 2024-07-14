@@ -79,4 +79,11 @@ public class UserController {
         // 如果密码不匹配，则返回密码错误信息
         return Result.error(444,"密码错误！");
     }
+
+
+    @GetMapping("/auth")
+    public Result check(){
+
+        return Result.success();
+    }
 }

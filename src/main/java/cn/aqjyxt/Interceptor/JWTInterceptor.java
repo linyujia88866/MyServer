@@ -16,6 +16,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
 
@@ -32,12 +33,13 @@ public class JWTInterceptor implements HandlerInterceptor {
         String token = getTokenFromRequest(request);
         try {
             String userId = JWTUtils.parseJWT(token);
-
             String tokenStored = redisTemplate.opsForValue().get(userId);
 
             if(!Objects.equals(tokenStored, token)){
                 throw new Exception("被校验的token与redis中存储的token不一致");
             }
+            redisTemplate.expire(userId, 30, TimeUnit.MINUTES);
+            redisTemplate.expire(userId + "_auth", 30, TimeUnit.MINUTES);
             return true;
         } catch (SignatureVerificationException e){
             log.info("SignatureVerificationException: {}", e.getMessage());

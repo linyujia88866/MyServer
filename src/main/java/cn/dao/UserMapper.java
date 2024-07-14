@@ -14,6 +14,6 @@ public interface UserMapper {
     @Select("select * from users where user_id = #{id}")
     User findById(String id);
     //新增
-    @Insert("insert into users(user_id, username, password)" +"values  (#{id},#{uname},#{psw})")
-    void add(String id, String uname, String psw);
+    @Insert("insert into users(user_id, username, password, authority)" +"values  (#{id},#{uname},#{psw},#{authority})")
+    void add(String id, String uname, String psw, int authority);
 }

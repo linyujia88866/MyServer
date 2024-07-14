@@ -5,8 +5,6 @@ import cn.aqjyxt.bean.Returnben;
 import cn.aqjyxt.entity.UserDto;
 import cn.aqjyxt.entity.aqjyxt_user;
 import cn.entity.User;
-import cn.hutool.core.lang.Assert;
-import cn.result.Result;
 import cn.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +32,13 @@ public class MyController {
 
     @PostMapping("/login")
     @ResponseBody
-    public Returnben login(HttpServletRequest request, HttpServletResponse response, HttpSession session, @RequestBody UserDto userDto ) {
+    public Returnben login(HttpServletResponse response, @RequestBody UserDto userDto ) {
         Returnben returnben = new Returnben();
         String user = userDto.getUser();
         String password = userDto.getPassword();
+        User userFromDataBase;
         try {
-            User userFromDataBase = userService.findByUser(user);
+            userFromDataBase = userService.findByUser(user);
             if(!Objects.equals(password, userFromDataBase.getPassword())){
                 returnben.setMsg("账号或密码错误");
                 returnben.setSuccess("500");
@@ -55,12 +54,13 @@ public class MyController {
         aqjyxt_user.setUser(user);
         aqjyxt_user.setPassword(password);
         String token = JWTUtils.getToken(aqjyxt_user);
-        returnben.setData("The token is already set in Cookies");
+        String auth = String.valueOf(userFromDataBase.getAuthority());
+        returnben.setData(auth);
         returnben.setMsg("登录成功");
         returnben.setSuccess("200");
         // 存储Token到Redis，假设用户名作为key
         redisTemplate.opsForValue().set(user, token, 30, TimeUnit.MINUTES);
-
+        redisTemplate.opsForValue().set(user + "_auth", auth, 30, TimeUnit.MINUTES);
 
         // 创建一个cookie
         Cookie myCookie = new Cookie("token", token);
@@ -80,8 +80,12 @@ public class MyController {
     @PostMapping("/verify")
     @ResponseBody
     public Returnben verify(HttpServletRequest request, HttpSession session) {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String authority = redisTemplate.opsForValue().get(username + "_auth");
+
         Returnben returnben = new Returnben();
-        returnben.setData("success");
+        returnben.setData(authority);
         returnben.setMsg("成功");
         returnben.setSuccess("200");
         return returnben;
@@ -89,7 +93,7 @@ public class MyController {
 
     @PostMapping("/logout")
     @ResponseBody
-    public Returnben logout(HttpServletRequest request, HttpSession session) {
+    public Returnben logout(HttpServletRequest request) {
         Returnben returnben = new Returnben();
         String token=getTokenFromRequest(request);
         String userId = JWTUtils.parseJWT(token);

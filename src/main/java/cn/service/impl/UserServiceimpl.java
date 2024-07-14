@@ -24,6 +24,7 @@ public class UserServiceimpl implements UserService {
     }
     @Override
     public void register(String id, String uname, String psw) {
-        userMapper.add(id, uname,psw);
+        int defaultAuthority = 10;
+        userMapper.add(id, uname, psw, defaultAuthority);
     }
 }

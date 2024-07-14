@@ -1,11 +1,9 @@
 package cn.controller;
 
 
-import cn.dto.StudentDTO;
+import cn.aqjyxt.bean.JWTUtils;
 import cn.dto.TaskDto;
 import cn.entity.Task;
-import cn.entity.User;
-import cn.hutool.core.convert.impl.UUIDConverter;
 import cn.result.Result;
 import cn.service.TaskService;
 import cn.utils.UuidUtil;
@@ -15,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.sql.Timestamp;
 import java.util.List;
+
+import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
 
 @RestController
 @Slf4j
@@ -37,7 +35,7 @@ public class TaskController {
      */
     @PostMapping("/save")
     @ResponseBody
-    public Result save (@RequestBody TaskDto taskdto) {
+    public Result save (HttpServletRequest request,@RequestBody TaskDto taskdto) {
         String taskId = UuidUtil.getUuid();
         String title = taskdto.getTitle();
 
@@ -47,35 +45,39 @@ public class TaskController {
         Timestamp timestamp = new Timestamp(currentTimeMillis);
         String content = taskdto.getContent();
         log.info("保存任务{}成功！", taskId);
-        taskService.saveTask(taskId, title, timestamp, content);
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        taskService.saveTask(taskId, title, timestamp, content, username);
         return Result.success(taskId);
     }
 
     @PostMapping("/update/{taskId}")
     @ResponseBody
-    public Result update (@RequestBody TaskDto taskdto, @PathVariable String taskId) {
+    public Result update (HttpServletRequest request,@RequestBody TaskDto taskdto, @PathVariable String taskId) {
         String title = taskdto.getTitle();
         long currentTimeMillis = System.currentTimeMillis();
         // 将当前时间戳转换为java.sql.Timestamp
         Timestamp timestamp = new Timestamp(currentTimeMillis);
         String content = taskdto.getContent();
-        int res = taskService.updateTask(taskId, title, timestamp, content);
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        int res = taskService.updateTask(taskId, title, timestamp, content,username);
         log.info("保存任务{}成功！", taskId);
         return Result.success(res);
     }
 
     @GetMapping("/tasks")
     @ResponseBody
-    public Result getAllTasks(){
-        List<TaskVo> res =  taskService.getAllTasks();
+    public Result getAllTasks(HttpServletRequest request){
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        List<TaskVo> res =  taskService.getAllTasks(username);
         return Result.success(res);
     }
 
 
     @GetMapping("/get/{taskId}")
     @ResponseBody
-    public Result getTaskById(@PathVariable("taskId") String taskId){
-        Task res =  taskService.findById(taskId);
+    public Result getTaskById(HttpServletRequest request, @PathVariable("taskId") String taskId){
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        Task res =  taskService.findById(taskId, username);
         return Result.success(res);
     }
 }

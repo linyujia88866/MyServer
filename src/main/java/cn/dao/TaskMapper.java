@@ -15,15 +15,15 @@ import java.util.List;
 public interface TaskMapper {
 
     //查询
-    @Select("select * from tasks where taskId = #{taskId}")
-    Task findById(String id);
+    @Select("select title, content from tasks where taskId = #{taskId} and username = #{username} ")
+    Task findById(String taskId, String username);
 
-    @Select("select taskId, title, createdAt from tasks")
-    List<TaskVo> getAllTasks();
+    @Select("select taskId, title, createdAt from tasks where username = #{username} ORDER BY createdAt DESC")
+    List<TaskVo> getAllTasks(String username);
     //新增
-    @Insert("insert into tasks(taskId, title, createdAt, content)" +"values  (#{taskId},#{title},#{createdAt},#{content})")
-    void add(String taskId, String title, Timestamp createdAt, String content);
+    @Insert("insert into tasks(taskId, title, createdAt, content, username)" +"values  (#{taskId},#{title},#{createdAt},#{content},#{username})")
+    void add(String taskId, String title, Timestamp createdAt, String content, String username);
 
-    @Update("UPDATE tasks SET title = #{title}, createdAt = #{createdAt}, content= #{content} WHERE taskId = #{taskId}")
-    int update(String taskId, String title, Timestamp createdAt, String content);
+    @Update("UPDATE tasks SET title = #{title}, createdAt = #{createdAt}, content= #{content} WHERE taskId = #{taskId} and username = #{username}")
+    int update(String taskId, String title, Timestamp createdAt, String content, String username);
 }
