@@ -1,12 +1,20 @@
 package cn.controller;
 
+import cn.aqjyxt.bean.JWTUtils;
 import cn.entity.User;
 import cn.result.Result;
 import cn.service.UserService;
+import cn.vo.UserVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Objects;
+
+import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
 import static cn.utils.TestCard.isValidCardId;
 
 @RestController
@@ -17,6 +25,10 @@ public class UserController {
     //注入userService
     @Autowired
     private UserService userService;
+
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 用户注册接口
@@ -53,6 +65,52 @@ public class UserController {
         }
 
     }
+
+
+    @PostMapping("/create")
+    public Result create (HttpServletRequest request, @RequestBody User user) {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        User userFromDataBase = userService.findByUser(username);
+        if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
+            return Result.error(500, "您不是超级管理员！");
+        }
+        String uname = user.getUsername();
+        String psw = user.getPassword();
+        User byuser =  userService.findByUser(uname);
+        String id = "test_" + uname;
+        if(byuser!=null){
+            //不存在则注册成功，将用户名和密码添加到数据库中
+            return Result.error(333, "用户名已存在！");
+        }else {
+            userService.register(id, uname,psw);
+            return Result.success("注册成功！");
+        }
+    }
+    @GetMapping("/all")
+    public Result users(HttpServletRequest request){
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        User userFromDataBase = userService.findByUser(username);
+        if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
+            return Result.error(500, "您不是超级管理员！");
+        }
+        List<UserVo> res = userService.getAllUsers();
+        return Result.success(res);
+    }
+
+    @GetMapping("/info")
+    public Result userInfo(HttpServletRequest request, @RequestBody User user){
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        User userFromDataBase = userService.findByUser(username);
+        if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
+            return Result.error(500, "您不是超级管理员！");
+        }
+        User res = userService.findByUser(user.getUsername());
+        return Result.success(res);
+    }
+
 
     /**
      * 用户登录接口

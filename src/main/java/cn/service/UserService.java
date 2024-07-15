@@ -1,6 +1,10 @@
 package cn.service;
 
 import cn.entity.User;
+import cn.vo.UserVo;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 public interface UserService {
     //根据用户名查询数据库
@@ -8,4 +12,8 @@ public interface UserService {
     User findById(String id);
     //注册  将用户名和密码添加到数据库中
     void register(String id, String uname, String psw);
+
+    void createByAdmin(String id, String uname, String psw);
+
+    List<UserVo> getAllUsers();
 }
