@@ -1,4 +1,4 @@
-package cn.how2j.springboot.web;
+package cn.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -1,7 +1,7 @@
-package cn.aqjyxt.Interceptor;
+package cn.Interceptor;
 
-import cn.aqjyxt.bean.JWTUtils;
-import cn.aqjyxt.bean.Returnben;
+import cn.utils.JWTUtils;
+import cn.entity.ReturnEntity;
 import com.auth0.jwt.exceptions.AlgorithmMismatchException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
+import static cn.utils.requestUtils.getTokenFromRequest;
 
 @Slf4j
 @Component
@@ -29,7 +29,7 @@ public class JWTInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) throws Exception {
         log.info("request url is {}", request.getRequestURI());
-        Returnben returnben = new Returnben();
+        ReturnEntity returnEntity = new ReturnEntity();
         String token = getTokenFromRequest(request);
         try {
             String userId = JWTUtils.parseJWT(token);
@@ -43,24 +43,24 @@ public class JWTInterceptor implements HandlerInterceptor {
             return true;
         } catch (SignatureVerificationException e){
             log.info("SignatureVerificationException: {}", e.getMessage());
-            returnben.setMsg("无效签名");
-            returnben.setSuccess("10001");
+            returnEntity.setMsg("无效签名");
+            returnEntity.setSuccess("10001");
         } catch (TokenExpiredException e){
             log.info("TokenExpiredException: {}", e.getMessage());
-            returnben.setMsg("token过期");
-            returnben.setSuccess("10002");
+            returnEntity.setMsg("token过期");
+            returnEntity.setSuccess("10002");
         } catch (AlgorithmMismatchException e){
             log.info("AlgorithmMismatchException: {}", e.getMessage());
             //token算法不一致
-            returnben.setMsg("无效签名");
-            returnben.setSuccess("10001");
+            returnEntity.setMsg("无效签名");
+            returnEntity.setSuccess("10001");
         } catch (Exception e){
             log.info("Other exception: {}", e.getMessage());
-            returnben.setMsg("token无效");
-            returnben.setSuccess("10003");
+            returnEntity.setMsg("token无效");
+            returnEntity.setSuccess("10003");
         }
         //将map转为json
-        String json = new ObjectMapper().writeValueAsString(returnben);
+        String json = new ObjectMapper().writeValueAsString(returnEntity);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().println(json);
         return false;

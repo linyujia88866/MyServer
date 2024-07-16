@@ -1,7 +1,6 @@
 package cn.service;
 
 
-import cn.aqjyxt.bean.JWTUtils;
 import cn.dao.TaskMapper;
 import cn.entity.Task;
 import cn.vo.TaskVo;
@@ -9,11 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.List;
-
-import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
 
 @Service
 @Slf4j

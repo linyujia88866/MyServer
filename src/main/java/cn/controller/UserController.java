@@ -1,21 +1,20 @@
 package cn.controller;
 
-import cn.aqjyxt.bean.JWTUtils;
 import cn.entity.User;
 import cn.result.Result;
 import cn.service.UserService;
+import cn.utils.JWTUtils;
 import cn.vo.UserVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
 
-import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
 import static cn.utils.TestCard.isValidCardId;
+import static cn.utils.requestUtils.getTokenFromRequest;
 
 @RestController
 @RequestMapping("/api/user")
@@ -25,10 +24,6 @@ public class UserController {
     //注入userService
     @Autowired
     private UserService userService;
-
-
-    @Autowired
-    private RedisTemplate redisTemplate;
 
     /**
      * 用户注册接口
@@ -109,39 +104,5 @@ public class UserController {
         }
         User res = userService.findByUser(user.getUsername());
         return Result.success(res);
-    }
-
-
-    /**
-     * 用户登录接口
-     * @param user 包含用户名和密码的用户对象，通过RequestBody接收前端传来的JSON数据
-     * @return 返回登录结果，如果用户名正确且密码匹配，则返回登录成功结果；否则返回错误信息
-     * 此登陆接口没有涉及对密码的加密，因此仅用于演示，在实际应用中应使用加密技术保护密码
-     * 也没有设计token，因此登录成功后，用户无法退出，需要手动关闭浏览器或重新打开浏览器
-     */
-    @PostMapping("/login")
-    public Result log(@RequestBody User user){
-        // 提取用户名和密码
-        String uname = user.getUsername();
-        String pword = user.getPassword();
-        // 根据用户名查找用户
-        User byUser = userService.findByUser(uname);
-        if (byUser == null){
-            // 如果用户名不存在，则返回用户名错误信息
-            return Result.error(444,"用户名错误");
-        }
-        if (pword.equals(byUser.getPassword())){
-            // // 如果密码匹配，则登录成功
-            return Result.success();
-        }
-        // 如果密码不匹配，则返回密码错误信息
-        return Result.error(444,"密码错误！");
-    }
-
-
-    @GetMapping("/auth")
-    public Result check(){
-
-        return Result.success();
     }
 }

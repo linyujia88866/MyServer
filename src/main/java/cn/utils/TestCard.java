@@ -3,12 +3,11 @@ package cn.utils;
 import static cn.utils.IdcardValidator.isValidatedAllIdcard;
 
 public class TestCard {
-    private static int[] w = {7,9,10,5,8,4,2,1,6,
+    private static final int[] w = {7,9,10,5,8,4,2,1,6,
             3,7,9,10,5,8,4,2};
 
-    private static String id = "11111111111";
-
     public static void main(String[] args) {
+        String id = "11111111111";
         System.out.println(isValidCardId(id));
 
     }

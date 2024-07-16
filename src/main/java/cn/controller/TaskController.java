@@ -1,7 +1,7 @@
 package cn.controller;
 
 
-import cn.aqjyxt.bean.JWTUtils;
+import cn.utils.JWTUtils;
 import cn.dto.TaskDto;
 import cn.entity.Task;
 import cn.result.Result;
@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
+import static cn.utils.requestUtils.getTokenFromRequest;
 
 @RestController
 @Slf4j

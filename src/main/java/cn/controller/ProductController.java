@@ -1,4 +1,4 @@
-package cn.how2j.springboot.web;
+package cn.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,8 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import cn.how2j.springboot.pojo.Product;
-import cn.how2j.springboot.service.ProductService;
+import cn.entity.Product;
+import cn.service.ProductService;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller

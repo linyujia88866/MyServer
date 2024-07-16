@@ -1,4 +1,4 @@
-package cn.aqjyxt.entity;
+package cn.dto;
 
 import lombok.Getter;
 import lombok.Setter;

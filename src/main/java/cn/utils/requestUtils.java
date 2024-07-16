@@ -1,4 +1,4 @@
-package cn.aqjyxt.utils;
+package cn.utils;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,9 +1,9 @@
-package cn.how2j.springboot.web;
+package cn.controller;
 
-import cn.aqjyxt.bean.JWTUtils;
-import cn.aqjyxt.bean.Returnben;
-import cn.aqjyxt.entity.UserDto;
-import cn.aqjyxt.entity.aqjyxt_user;
+import cn.utils.JWTUtils;
+import cn.entity.ReturnEntity;
+import cn.dto.UserDto;
+import cn.entity.User4Token;
 import cn.entity.User;
 import cn.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import javax.servlet.http.HttpSession;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static cn.aqjyxt.utils.requestUtils.getTokenFromRequest;
+import static cn.utils.requestUtils.getTokenFromRequest;
 
 @RestController
 @Slf4j
@@ -32,32 +32,32 @@ public class MyController {
 
     @PostMapping("/login")
     @ResponseBody
-    public Returnben login(HttpServletResponse response, @RequestBody UserDto userDto ) {
-        Returnben returnben = new Returnben();
+    public ReturnEntity login(HttpServletResponse response, @RequestBody UserDto userDto ) {
+        ReturnEntity returnEntity = new ReturnEntity();
         String user = userDto.getUser();
         String password = userDto.getPassword();
         User userFromDataBase;
         try {
             userFromDataBase = userService.findByUser(user);
             if(!Objects.equals(password, userFromDataBase.getPassword())){
-                returnben.setMsg("账号或密码错误");
-                returnben.setSuccess("500");
-                return returnben;
+                returnEntity.setMsg("账号或密码错误");
+                returnEntity.setSuccess("500");
+                return returnEntity;
             }
         } catch (Exception e) {
-            returnben.setMsg("账号或密码错误");
-            returnben.setSuccess("500");
-            return returnben;
+            returnEntity.setMsg("账号或密码错误");
+            returnEntity.setSuccess("500");
+            return returnEntity;
         }
 
-        aqjyxt_user aqjyxt_user = new aqjyxt_user();
-        aqjyxt_user.setUser(user);
-        aqjyxt_user.setPassword(password);
-        String token = JWTUtils.getToken(aqjyxt_user);
+        User4Token User4Token = new User4Token();
+        User4Token.setUser(user);
+        User4Token.setPassword(password);
+        String token = JWTUtils.getToken(User4Token);
         String auth = String.valueOf(userFromDataBase.getAuthority());
-        returnben.setData(auth);
-        returnben.setMsg("登录成功");
-        returnben.setSuccess("200");
+        returnEntity.setData(auth);
+        returnEntity.setMsg("登录成功");
+        returnEntity.setSuccess("200");
         // 存储Token到Redis，假设用户名作为key
         redisTemplate.opsForValue().set(user, token, 30, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(user + "_auth", auth, 30, TimeUnit.MINUTES);
@@ -73,47 +73,41 @@ public class MyController {
         // 设置cookie到response中
         response.addCookie(myCookie);
         log.info("set token to cookies");
-        return returnben;
+        return returnEntity;
 
     }
 
     @PostMapping("/verify")
     @ResponseBody
-    public Returnben verify(HttpServletRequest request, HttpSession session) {
+    public ReturnEntity verify(HttpServletRequest request, HttpSession session) {
         String token = getTokenFromRequest(request);
         String username = JWTUtils.parseJWT(token);
         String authority = redisTemplate.opsForValue().get(username + "_auth");
 
-        Returnben returnben = new Returnben();
-        returnben.setData(authority);
-        returnben.setMsg("成功");
-        returnben.setSuccess("200");
-        return returnben;
+        ReturnEntity returnEntity = new ReturnEntity();
+        returnEntity.setData(authority);
+        returnEntity.setMsg("成功");
+        returnEntity.setSuccess("200");
+        return returnEntity;
     }
 
     @PostMapping("/logout")
     @ResponseBody
-    public Returnben logout(HttpServletRequest request) {
-        Returnben returnben = new Returnben();
+    public ReturnEntity logout(HttpServletRequest request) {
+        ReturnEntity returnEntity = new ReturnEntity();
         String token=getTokenFromRequest(request);
         String userId = JWTUtils.parseJWT(token);
         try {
             redisTemplate.delete(userId);
-            returnben.setData("success");
-            returnben.setMsg("成功");
-            returnben.setSuccess("200");
+            returnEntity.setData("success");
+            returnEntity.setMsg("成功");
+            returnEntity.setSuccess("200");
         }catch (Exception e){
-            returnben.setData("failed");
-            returnben.setMsg("登出失败");
-            returnben.setSuccess("500");
+            returnEntity.setData("failed");
+            returnEntity.setMsg("登出失败");
+            returnEntity.setSuccess("500");
         }
 
-        return returnben;
-    }
-
-    @PostMapping("/postHello")
-    public String postHello1(@RequestParam("name") String name,
-                             @RequestParam("age") Integer age) {
-        return "name：" + name + "\nage：" + age;
+        return returnEntity;
     }
 }

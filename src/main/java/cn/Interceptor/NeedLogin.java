@@ -1,4 +1,4 @@
-package cn.aqjyxt.Interceptor;
+package cn.Interceptor;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

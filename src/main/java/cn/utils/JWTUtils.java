@@ -1,6 +1,6 @@
-package cn.aqjyxt.bean;
+package cn.utils;
 
-import cn.aqjyxt.entity.aqjyxt_user;
+import cn.entity.User4Token;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -20,7 +20,7 @@ public class JWTUtils {
      * @param u user
      * @return token
      */
-    public static String getToken(aqjyxt_user u) {
+    public static String getToken(User4Token u) {
         Calendar instance = Calendar.getInstance();
         //默认令牌过期时间7天
         instance.add(Calendar.MINUTE, 10);
