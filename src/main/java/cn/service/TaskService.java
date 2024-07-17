@@ -18,7 +18,6 @@ public class TaskService {
     @Autowired
     private TaskMapper taskMapper;
 
-
     public Task findById(String id, String username) {
         return taskMapper.findById(id, username);
     }
@@ -30,8 +29,6 @@ public class TaskService {
     public void saveTask(String taskId, String title, Timestamp createdAt, String content, String username) {
         taskMapper.add(taskId, title,createdAt,content, username);
     }
-
-
     public int updateTask(String taskId, String title, Timestamp createdAt, String content, String username) {
         return taskMapper.update(taskId, title,createdAt,content, username);
     }

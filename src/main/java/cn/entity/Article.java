@@ -1,0 +1,10 @@
+package cn.entity;
+import lombok.Data;
+@Data       // 自动生成getter/setter/toString/hashCode/equals等方法
+public class Article {
+    private String articleId;
+    private String title;
+    private String createdAt;
+    private String content;
+    private String username;
+}
