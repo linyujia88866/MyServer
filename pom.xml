@@ -95,7 +95,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
-    </dependencies>
+		<dependency>
+			<groupId>io.minio</groupId>
+			<artifactId>minio</artifactId>
+			<version>7.0.2</version>
+		</dependency>
+
+	</dependencies>
 
 	<build>
 	    <plugins>
