@@ -1,9 +1,11 @@
 package cn.config;
 
+import cn.vo.FileVo;
 import io.minio.MinioClient;
 import io.minio.ObjectStat;
 import io.minio.PutObjectOptions;
 import io.minio.Result;
+import io.minio.errors.XmlParserException;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -15,11 +17,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -92,6 +97,23 @@ public class MinioConfig implements InitializingBean {
         }
     }
 
+    public String createDir(String filepath) throws Exception {
+        // bucket 不存在，创建
+        if (!minioClient.bucketExists(this.bucket)) {
+            minioClient.makeBucket(this.bucket);
+        }
+        int lastIndex = filepath.lastIndexOf("/");
+        String fileName = filepath.substring(lastIndex + 1);
+        String content = "HelloWorld";
+        InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+        // 使用这个空的byte数组创建一个ByteArrayInputStream
+        PutObjectOptions putObjectOptions = new PutObjectOptions(10,PutObjectOptions.MIN_MULTIPART_SIZE);
+        putObjectOptions.setContentType("text/plain");
+        String objectName = filepath + "/" + fileName + "_#*#*dirMask";
+        minioClient.putObject(this.bucket, objectName, inputStream, putObjectOptions);
+        return "Folder created successfully.";
+    }
+
     /**
      * 文件下载
      */
@@ -101,6 +123,7 @@ public class MinioConfig implements InitializingBean {
         try {
             MinioClient minioClient = new MinioClient(host, accessKey, secretKey);
             ObjectStat stat = minioClient.statObject(bucket, fileName);
+            System.out.println(fileName);
             inputStream = minioClient.getObject(bucket, fileName);
             response.setContentType(stat.contentType());
             response.setCharacterEncoding("UTF-8");
@@ -111,6 +134,11 @@ public class MinioConfig implements InitializingBean {
             e.printStackTrace();
             System.out.println("有异常：" + e);
         }
+    }
+
+    public void downloadDir(String dirPath) throws XmlParserException {
+        Iterator<Result<Item>> iterator =  minioClient.listObjects(this.bucket, dirPath, true).iterator();
+
     }
 
     /**
@@ -226,6 +254,14 @@ public class MinioConfig implements InitializingBean {
         return null;
     }
 
+    public Iterable<Result<Item>> listObjects(String bucketName, String prefix, boolean withSub) throws Exception {
+        boolean flag = bucketExists(bucketName);
+        if (flag) {
+            return minioClient.listObjects(bucketName, prefix, withSub);
+        }
+        return null;
+    }
+
     /**
      * 列出存储桶中的所有对象名称
      *
@@ -257,9 +293,48 @@ public class MinioConfig implements InitializingBean {
         List<String> listObjectNames = new ArrayList<>();
         boolean flag = bucketExists(bucketName);
         if (flag) {
-            System.out.println(prefix);
-            System.out.println(bucketName);
             Iterable<Result<Item>> myObjects = listObjects(bucketName, prefix);
+            for (Result<Item> result : myObjects) {
+                Item item = result.get();
+                listObjectNames.add(item.objectName());
+            }
+        }
+        return listObjectNames;
+    }
+
+
+    public List<FileVo> listObjectProperties(String bucketName, String prefix) throws Exception {
+        List<String> listObjectNames = new ArrayList<>();
+        List<FileVo> listObjectProperties = new ArrayList<>();
+        boolean flag = bucketExists(bucketName);
+        if (flag) {
+            Iterable<Result<Item>> myObjects = listObjects(bucketName, prefix);
+            for (Result<Item> result : myObjects) {
+                Item item = result.get();
+                listObjectNames.add(item.objectName());
+                FileVo fileVo = new FileVo();
+                fileVo.setName(item.objectName());
+                fileVo.setSize(item.size());
+                fileVo.setTime(getTime(item));
+                listObjectProperties.add(fileVo);
+            }
+        }
+        return listObjectProperties;
+    }
+
+    public ZonedDateTime getTime(Item item) {
+        try {
+            return item.lastModified();
+        } catch (Exception e){
+            return null;
+        }
+    }
+
+    public List<String> listObjectNames(String bucketName, String prefix, boolean withSub) throws Exception {
+        List<String> listObjectNames = new ArrayList<>();
+        boolean flag = bucketExists(bucketName);
+        if (flag) {
+            Iterable<Result<Item>> myObjects = listObjects(bucketName, prefix, withSub);
             for (Result<Item> result : myObjects) {
                 Item item = result.get();
                 listObjectNames.add(item.objectName());
@@ -287,6 +362,17 @@ public class MinioConfig implements InitializingBean {
             }
         }
         return false;
+    }
+
+
+    /**
+     * 删除一个对象
+     *
+     * @param objectName 存储桶里的对象名称
+     * @throws Exception
+     */
+    public boolean removeObject(String objectName) throws Exception {
+        return  removeObject(this.bucket, objectName);
     }
 
     /**

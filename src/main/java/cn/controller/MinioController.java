@@ -3,8 +3,9 @@ package cn.controller;
 
 import cn.config.MinioConfig;
 import cn.utils.JWTUtils;
-import io.minio.Result;
-import io.minio.messages.Item;
+import cn.utils.MinioDownloadUtil;
+import cn.vo.FileVo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,10 +19,14 @@ import static cn.utils.requestUtils.getTokenFromRequest;
 @RestController
 @CrossOrigin
 @RequestMapping("/api/minio")
+@Slf4j
 public class MinioController {
 
     @Autowired
     MinioConfig minioConfig;
+
+    @Autowired
+    MinioDownloadUtil minioDownloadUtil;
 
     // 上传
     @PostMapping("/upload")
@@ -37,28 +42,45 @@ public class MinioController {
         return this.minioConfig.putObject(multipartFile, finalPath);
     }
 
+    @PostMapping("/createDir")
+    public Object createDir(HttpServletRequest request, @RequestParam(value = "filepath") String filepath) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath;
+        if(filepath.equals("/")){
+            finalPath = username + "/";
+        } else {
+            finalPath = username + "/" + filepath;
+        }
+        return this.minioConfig.createDir(finalPath);
+    }
+
     // 下载文件
     @GetMapping("/download")
-    public void download(@RequestParam("fileName")String fileName, HttpServletResponse response) {
-        this.minioConfig.download(fileName,response);
+    public void download(HttpServletRequest request, @RequestParam("fileName")String fileName, HttpServletResponse response) {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath = username + "/" + fileName;
+        this.minioConfig.download(finalPath,response);
     }
 
-    // 列出所有存储桶名称
-    @PostMapping("/list")
-    public List<String> list() throws Exception {
-        return this.minioConfig.listBucketNames();
-    }
+    @GetMapping("/downloadDir")
+    public String downloadDir(HttpServletRequest request, @RequestParam("fileName")String fileName, HttpServletResponse response) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath = username + "/" + fileName;
+        List<String> filePaths = this.minioConfig.listObjectNames("test", finalPath, true);
+        //以下代码为获取图片inputStream
+        filePaths.removeIf(entity -> entity.endsWith("/") || entity.endsWith("_#*#*dirMask"));
+        log.info("下载清单列表{}", filePaths);
+        if(!filePaths.isEmpty()){
+            minioDownloadUtil.downloadZip("linyujia", filePaths, response, username);
+            return  "download successfully!";
+        }else {
+            response.setStatus(222);
+            return  "Nothing to download!";
+        }
 
-    // 创建存储桶
-    @PostMapping("/createBucket")
-    public boolean createBucket(String bucketName) throws Exception {
-        return this.minioConfig.makeBucket(bucketName);
-    }
-
-    // 删除存储桶
-    @PostMapping("/deleteBucket")
-    public boolean deleteBucket(String bucketName) throws Exception {
-        return this.minioConfig.removeBucket(bucketName);
     }
 
     // 列出存储桶中的所有对象名称
@@ -68,7 +90,7 @@ public class MinioController {
     }
 
     @PostMapping("/listObjectNamesInDir/{bucketName}")
-    public List<String> listObjectNames1(HttpServletRequest request, @PathVariable String bucketName, @RequestParam(value = "prefix") String prefix) throws Exception {
+    public List<String> listObjectNamesInDir(HttpServletRequest request, @PathVariable String bucketName, @RequestParam(value = "prefix") String prefix) throws Exception {
         String token = getTokenFromRequest(request);
         String username = JWTUtils.parseJWT(token);
         String finalPath;
@@ -80,22 +102,47 @@ public class MinioController {
         return this.minioConfig.listObjectNames(bucketName, finalPath);
     }
 
-
-    @PostMapping("/listObjectObjects/{bucketName}")
-    public Iterable<Result<Item>> listObjects(@PathVariable String bucketName) throws Exception {
-        return this.minioConfig.listObjects(bucketName);
+    @PostMapping("/listObjectsInDir/{bucketName}")
+    public List<FileVo> listObjectsInDir(HttpServletRequest request, @PathVariable String bucketName, @RequestParam(value = "prefix") String prefix) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath;
+        if(prefix.equals("/")){
+            finalPath = username + "/";
+        } else {
+            finalPath = username + "/" + prefix;
+        }
+        return this.minioConfig.listObjectProperties(bucketName, finalPath);
     }
 
     // 删除一个对象
     @PostMapping("/removeObject")
-    public boolean removeObject(String bucketName, String objectName) throws Exception {
-        return this.minioConfig.removeObject(bucketName, objectName);
+    public boolean removeObject(HttpServletRequest request,@RequestParam(value = "filepath") String filepath) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath= username + "/" + filepath;
+        return this.minioConfig.removeObject(finalPath);
     }
 
-    // 文件访问路径
-    @PostMapping("/getObjectUrl")
-    public String getObjectUrl(String bucketName, String objectName) throws Exception {
-        return this.minioConfig.getObjectUrl(bucketName, objectName);
+
+    @PostMapping("/removeDir")
+    public boolean removeDir(HttpServletRequest request,@RequestParam(value = "filepath") String dirPath) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath;
+        if(dirPath.equals("/")){
+            finalPath = username + "/";
+        } else {
+            finalPath = username + "/" + dirPath;
+        }
+        if(!finalPath.endsWith("/")){
+            finalPath = finalPath + "/";
+        }
+        List<String> fileList = this.minioConfig.listObjectNames("test", finalPath, true);
+        for(String file : fileList){
+            this.minioConfig.removeObject(file);
+        }
+        return true;
     }
 }
 
