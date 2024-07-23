@@ -38,8 +38,8 @@ public class JWTInterceptor implements HandlerInterceptor {
             if(!Objects.equals(tokenStored, token)){
                 throw new Exception("被校验的token与redis中存储的token不一致");
             }
-            redisTemplate.expire(userId, 30, TimeUnit.MINUTES);
-            redisTemplate.expire(userId + "_auth", 30, TimeUnit.MINUTES);
+            redisTemplate.expire(userId, 60, TimeUnit.MINUTES);
+            redisTemplate.expire(userId + "_auth", 60, TimeUnit.MINUTES);
             return true;
         } catch (SignatureVerificationException e){
             log.info("SignatureVerificationException: {}", e.getMessage());

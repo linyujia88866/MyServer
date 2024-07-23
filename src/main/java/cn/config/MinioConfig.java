@@ -8,6 +8,7 @@ import io.minio.Result;
 import io.minio.errors.XmlParserException;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,6 +29,7 @@ import java.util.List;
 
 
 @Component
+@Slf4j
 public class MinioConfig implements InitializingBean {
 
     @Value(value = "${minio.bucket}")
@@ -353,13 +354,20 @@ public class MinioConfig implements InitializingBean {
     public boolean removeObject(String bucketName, String objectName) throws Exception {
         boolean flag = bucketExists(bucketName);
         if (flag) {
-            List<String> objectList = listObjectNames(bucketName);
-            for (String s : objectList) {
-                if(s.equals(objectName)){
-                    minioClient.removeObject(bucketName, objectName);
-                    return true;
-                }
-            }
+            minioClient.removeObject(bucketName, objectName);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean moveObject(String bucketName, String objectName, String srcObjectName) throws Exception {
+        boolean flag = bucketExists(bucketName);
+        if (flag) {
+            log.info("复制对象{}， {}", objectName, srcObjectName);
+            minioClient.copyObject(bucketName, objectName, null, null,  bucketName, srcObjectName, null, null);
+            log.info("删除对象{}", srcObjectName);
+            minioClient.removeObject(bucketName, srcObjectName);
+            return true;
         }
         return false;
     }

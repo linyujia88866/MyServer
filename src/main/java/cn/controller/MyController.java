@@ -59,8 +59,8 @@ public class MyController {
         returnEntity.setMsg("登录成功");
         returnEntity.setSuccess("200");
         // 存储Token到Redis，假设用户名作为key
-        redisTemplate.opsForValue().set(user, token, 30, TimeUnit.MINUTES);
-        redisTemplate.opsForValue().set(user + "_auth", auth, 30, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(user, token, 60, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(user + "_auth", auth, 60, TimeUnit.MINUTES);
 
         // 创建一个cookie
         Cookie myCookie = new Cookie("token", token);
