@@ -5,10 +5,12 @@ import io.minio.MinioClient;
 import io.minio.ObjectStat;
 import io.minio.PutObjectOptions;
 import io.minio.Result;
-import io.minio.errors.XmlParserException;
+import io.minio.errors.*;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.xwpf.converter.pdf.PdfConverter;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,9 +21,12 @@ import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -124,12 +129,49 @@ public class MinioConfig implements InitializingBean {
         try {
             MinioClient minioClient = new MinioClient(host, accessKey, secretKey);
             ObjectStat stat = minioClient.statObject(bucket, fileName);
-            System.out.println(fileName);
             inputStream = minioClient.getObject(bucket, fileName);
             response.setContentType(stat.contentType());
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
             IOUtils.copy(inputStream, response.getOutputStream());
+            inputStream.close();
+        } catch (Exception e){
+            e.printStackTrace();
+            System.out.println("有异常：" + e);
+        }
+    }
+
+    public void preview(String fileName, HttpServletResponse response) throws InvalidBucketNameException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, RegionConflictException {
+        // bucket 不存在，创建
+        if (!minioClient.bucketExists("temp")) {
+            minioClient.makeBucket("temp");
+        }
+        // 从链接中得到文件名
+        InputStream inputStream;
+        try {
+            MinioClient minioClient = new MinioClient(host, accessKey, secretKey);
+            ObjectStat stat = minioClient.statObject(bucket, fileName);
+            inputStream = minioClient.getObject(bucket, fileName);
+
+
+            log.info(fileName);
+            if(fileName.endsWith(".pdf")){
+                log.info("原本即为pdf文件");
+                response.setContentType(stat.contentType());
+                response.setCharacterEncoding("UTF-8");
+                response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+                IOUtils.copy(inputStream, response.getOutputStream());
+            }else {
+                response.setContentType("application/pdf");
+                response.setCharacterEncoding("UTF-8");
+                String newFileName = fileName.replace(".docx", ".pdf");
+                response.setHeader("Content-Disposition", "attachment;filename=" +
+                        URLEncoder.encode(newFileName, "UTF-8"));
+                XWPFDocument document = null;
+                document = new XWPFDocument(inputStream);
+                PdfConverter.getInstance().convert(document, response.getOutputStream(), null);
+            }
+
             inputStream.close();
         } catch (Exception e){
             e.printStackTrace();

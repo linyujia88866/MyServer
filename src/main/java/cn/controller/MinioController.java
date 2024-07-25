@@ -5,13 +5,18 @@ import cn.config.MinioConfig;
 import cn.utils.JWTUtils;
 import cn.utils.MinioDownloadUtil;
 import cn.vo.FileVo;
+import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import static cn.utils.requestUtils.getTokenFromRequest;
@@ -62,6 +67,14 @@ public class MinioController {
         String username = JWTUtils.parseJWT(token);
         String finalPath = username + "/" + fileName;
         this.minioConfig.download(finalPath,response);
+    }
+
+    @GetMapping("/preview")
+    public void preview(HttpServletRequest request, @RequestParam("fileName")String fileName, HttpServletResponse response) throws RegionConflictException, InvalidBucketNameException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath = username + "/" + fileName;
+        this.minioConfig.preview(finalPath,response);
     }
 
     @GetMapping("/downloadDir")
