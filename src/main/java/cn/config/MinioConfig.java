@@ -117,6 +117,7 @@ public class MinioConfig implements InitializingBean {
     }
 
     public void preview(String fileName, HttpServletResponse response) {
+        log.info("预览文件:{}", fileName);
         download(fileName, response);
     }
 

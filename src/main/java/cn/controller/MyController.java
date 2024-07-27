@@ -69,7 +69,6 @@ public class MyController {
         myCookie.setMaxAge(3600);
 
         // 设置cookie的路径，这样只有访问这个路径时才会发送cookie
-//        myCookie.setPath("/");
         // 设置cookie到response中
         response.addCookie(myCookie);
         log.info("set token to cookies");
