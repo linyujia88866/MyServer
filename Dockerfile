@@ -1,5 +1,5 @@
 # 基于官方的Java 1.8镜像
-FROM openjdk:8-jdk-alpine
+FROM openjdk:8u312-jdk-oracle
 
 # 在容器内部创建一个目录存放JAR包
 ARG JAR_FILE=target/product-service-0.0.1-SNAPSHOT.jar
@@ -11,4 +11,4 @@ COPY ${JAR_FILE} app.jar
 EXPOSE 9802
 
 # 运行Java应用程序
-ENTRYPOINT ["java", "-jar","-Dspring.profiles.active=prod", "/app.jar"]
+ENTRYPOINT ["java", "-jar","-Dspring.profiles.active=prod", "-Dfile.encoding=UTF-8", "/app.jar"]

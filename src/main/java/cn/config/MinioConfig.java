@@ -5,12 +5,9 @@ import io.minio.MinioClient;
 import io.minio.ObjectStat;
 import io.minio.PutObjectOptions;
 import io.minio.Result;
-import io.minio.errors.*;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.xwpf.converter.pdf.PdfConverter;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,15 +18,11 @@ import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -67,24 +60,6 @@ public class MinioConfig implements InitializingBean {
     /**
      * 上传
      */
-    public String putObject(MultipartFile multipartFile) throws Exception {
-        // bucket 不存在，创建
-        if (!minioClient.bucketExists(this.bucket)) {
-            minioClient.makeBucket(this.bucket);
-        }
-        try (InputStream inputStream = multipartFile.getInputStream()) {
-            // 上传文件的名称
-            String fileName = multipartFile.getOriginalFilename();
-            // PutObjectOptions，上传配置(文件大小，内存中文件分片大小)
-            PutObjectOptions putObjectOptions = new PutObjectOptions(multipartFile.getSize(), PutObjectOptions.MIN_MULTIPART_SIZE);
-            // 文件的ContentType
-            putObjectOptions.setContentType(multipartFile.getContentType());
-            minioClient.putObject(this.bucket, fileName, inputStream, putObjectOptions);
-            // 返回访问路径
-            return this.url + UriUtils.encode(fileName, StandardCharsets.UTF_8);
-        }
-    }
-
     public String putObject(MultipartFile multipartFile, String filepath) throws Exception {
         // bucket 不存在，创建
         if (!minioClient.bucketExists(this.bucket)) {
@@ -99,6 +74,7 @@ public class MinioConfig implements InitializingBean {
             putObjectOptions.setContentType(multipartFile.getContentType());
             minioClient.putObject(this.bucket, filepath +fileName, inputStream, putObjectOptions);
             // 返回访问路径
+            assert fileName != null;
             return this.url + UriUtils.encode(fileName, StandardCharsets.UTF_8);
         }
     }
@@ -136,59 +112,17 @@ public class MinioConfig implements InitializingBean {
             IOUtils.copy(inputStream, response.getOutputStream());
             inputStream.close();
         } catch (Exception e){
-            e.printStackTrace();
             System.out.println("有异常：" + e);
         }
     }
 
-    public void preview(String fileName, HttpServletResponse response) throws InvalidBucketNameException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException, RegionConflictException {
-        // bucket 不存在，创建
-        if (!minioClient.bucketExists("temp")) {
-            minioClient.makeBucket("temp");
-        }
-        // 从链接中得到文件名
-        InputStream inputStream;
-        try {
-            MinioClient minioClient = new MinioClient(host, accessKey, secretKey);
-            ObjectStat stat = minioClient.statObject(bucket, fileName);
-            inputStream = minioClient.getObject(bucket, fileName);
-
-
-            log.info(fileName);
-            if(fileName.endsWith(".pdf")){
-                log.info("原本即为pdf文件");
-                response.setContentType(stat.contentType());
-                response.setCharacterEncoding("UTF-8");
-                response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
-                IOUtils.copy(inputStream, response.getOutputStream());
-            }else {
-                response.setContentType("application/pdf");
-                response.setCharacterEncoding("UTF-8");
-                String newFileName = fileName.replace(".docx", ".pdf");
-                response.setHeader("Content-Disposition", "attachment;filename=" +
-                        URLEncoder.encode(newFileName, "UTF-8"));
-                XWPFDocument document = null;
-                document = new XWPFDocument(inputStream);
-                PdfConverter.getInstance().convert(document, response.getOutputStream(), null);
-            }
-
-            inputStream.close();
-        } catch (Exception e){
-            e.printStackTrace();
-            System.out.println("有异常：" + e);
-        }
-    }
-
-    public void downloadDir(String dirPath) throws XmlParserException {
-        Iterator<Result<Item>> iterator =  minioClient.listObjects(this.bucket, dirPath, true).iterator();
-
+    public void preview(String fileName, HttpServletResponse response) {
+        download(fileName, response);
     }
 
     /**
      * 列出所有存储桶名称
      *
-     * @return
-     * @throws Exception
      */
     public List<String> listBucketNames()
             throws Exception {
@@ -203,8 +137,6 @@ public class MinioConfig implements InitializingBean {
     /**
      * 查看所有桶
      *
-     * @return
-     * @throws Exception
      */
     public List<Bucket> listBuckets()
             throws Exception {
@@ -214,24 +146,14 @@ public class MinioConfig implements InitializingBean {
     /**
      * 检查存储桶是否存在
      *
-     * @param bucketName
-     * @return
-     * @throws Exception
      */
     public boolean bucketExists(String bucketName) throws Exception {
-        boolean flag = minioClient.bucketExists(bucketName);
-        if (flag) {
-            return true;
-        }
-        return false;
+        return minioClient.bucketExists(bucketName);
     }
 
     /**
      * 创建存储桶
      *
-     * @param bucketName
-     * @return
-     * @throws Exception
      */
     public boolean makeBucket(String bucketName)
             throws Exception {
@@ -247,9 +169,6 @@ public class MinioConfig implements InitializingBean {
     /**
      * 删除桶
      *
-     * @param bucketName
-     * @return
-     * @throws Exception
      */
     public boolean removeBucket(String bucketName)
             throws Exception {
@@ -266,9 +185,7 @@ public class MinioConfig implements InitializingBean {
             // 删除存储桶，注意，只有存储桶为空时才能删除成功。
             minioClient.removeBucket(bucketName);
             flag = bucketExists(bucketName);
-            if (!flag) {
-                return true;
-            }
+            return !flag;
 
         }
         return false;
@@ -278,8 +195,6 @@ public class MinioConfig implements InitializingBean {
      * 列出存储桶中的所有对象
      *
      * @param bucketName 存储桶名称
-     * @return
-     * @throws Exception
      */
     public Iterable<Result<Item>> listObjects(String bucketName) throws Exception {
         boolean flag = bucketExists(bucketName);
@@ -309,28 +224,6 @@ public class MinioConfig implements InitializingBean {
      * 列出存储桶中的所有对象名称
      *
      * @param bucketName 存储桶名称
-     * @return
-     * @throws Exception
-     */
-    public List<String> listObjectNames(String bucketName) throws Exception {
-        List<String> listObjectNames = new ArrayList<>();
-        boolean flag = bucketExists(bucketName);
-        if (flag) {
-            Iterable<Result<Item>> myObjects = listObjects(bucketName);
-            for (Result<Item> result : myObjects) {
-                Item item = result.get();
-                listObjectNames.add(item.objectName());
-            }
-        }
-        return listObjectNames;
-    }
-
-    /**
-     * 列出存储桶中的所有对象名称
-     *
-     * @param bucketName 存储桶名称
-     * @return
-     * @throws Exception
      */
     public List<String> listObjectNames(String bucketName, String prefix) throws Exception {
         List<String> listObjectNames = new ArrayList<>();
@@ -347,14 +240,12 @@ public class MinioConfig implements InitializingBean {
 
 
     public List<FileVo> listObjectProperties(String bucketName, String prefix) throws Exception {
-        List<String> listObjectNames = new ArrayList<>();
         List<FileVo> listObjectProperties = new ArrayList<>();
         boolean flag = bucketExists(bucketName);
         if (flag) {
             Iterable<Result<Item>> myObjects = listObjects(bucketName, prefix);
             for (Result<Item> result : myObjects) {
                 Item item = result.get();
-                listObjectNames.add(item.objectName());
                 FileVo fileVo = new FileVo();
                 fileVo.setName(item.objectName());
                 fileVo.setSize(item.size());
@@ -391,7 +282,6 @@ public class MinioConfig implements InitializingBean {
      *
      * @param bucketName 存储桶名称
      * @param objectName 存储桶里的对象名称
-     * @throws Exception
      */
     public boolean removeObject(String bucketName, String objectName) throws Exception {
         boolean flag = bucketExists(bucketName);
@@ -419,7 +309,6 @@ public class MinioConfig implements InitializingBean {
      * 删除一个对象
      *
      * @param objectName 存储桶里的对象名称
-     * @throws Exception
      */
     public boolean removeObject(String objectName) throws Exception {
         return  removeObject(this.bucket, objectName);
@@ -430,8 +319,6 @@ public class MinioConfig implements InitializingBean {
      *
      * @param bucketName 存储桶名称
      * @param objectName 存储桶里的对象名称
-     * @return
-     * @throws Exception
      */
     public String getObjectUrl(String bucketName, String objectName) throws Exception {
         boolean flag = bucketExists(bucketName);
