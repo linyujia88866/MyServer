@@ -141,6 +141,19 @@ public class MinioController {
     }
 
 
+    @PostMapping("/copyObject")
+    public boolean copyObject(HttpServletRequest request,@RequestParam(value = "srcpath") String srcpath,
+                              @RequestParam(value = "despath") String despath) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalSrcPath= username + "/" + srcpath;
+        String finalDesPath= username + "/" + despath;
+        String bucketName = "test";
+
+        return this.minioConfig.copyObject(bucketName, finalDesPath, finalSrcPath);
+    }
+
+
     // 删除一个对象
     @PostMapping("/removeObject")
     public boolean removeObject(HttpServletRequest request,@RequestParam(value = "filepath") String filepath) throws Exception {

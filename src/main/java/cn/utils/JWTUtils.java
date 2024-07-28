@@ -23,7 +23,7 @@ public class JWTUtils {
     public static String getToken(User4Token u) {
         Calendar instance = Calendar.getInstance();
         //默认令牌过期时间7天
-        instance.add(Calendar.MINUTE, 30);
+        instance.add(Calendar.DATE, 3);
 
         //把用户id保存到subject变量，也可以使用.withClaim("userId", 123)
         JWTCreator.Builder builder = JWT.create();

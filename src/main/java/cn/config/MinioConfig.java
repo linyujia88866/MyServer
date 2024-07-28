@@ -305,6 +305,16 @@ public class MinioConfig implements InitializingBean {
         return false;
     }
 
+    public boolean copyObject(String bucketName, String objectName, String srcObjectName) throws Exception {
+        boolean flag = bucketExists(bucketName);
+        if (flag) {
+            log.info("复制对象{}， {}", objectName, srcObjectName);
+            minioClient.copyObject(bucketName, objectName, null, null,  bucketName, srcObjectName, null, null);
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * 删除一个对象
