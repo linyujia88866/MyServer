@@ -79,6 +79,26 @@ public class MinioConfig implements InitializingBean {
         }
     }
 
+    public String putObject(MultipartFile multipartFile, String filepath, String fileName) throws Exception {
+        // bucket 不存在，创建
+        if (!minioClient.bucketExists(this.bucket)) {
+            minioClient.makeBucket(this.bucket);
+        }
+        try (InputStream inputStream = multipartFile.getInputStream()) {
+            // 上传文件的名称
+
+            // PutObjectOptions，上传配置(文件大小，内存中文件分片大小)
+            PutObjectOptions putObjectOptions = new PutObjectOptions(multipartFile.getSize(), PutObjectOptions.MIN_MULTIPART_SIZE);
+            // 文件的ContentType
+            putObjectOptions.setContentType(multipartFile.getContentType());
+            log.info(filepath +fileName);
+            minioClient.putObject(this.bucket, filepath +fileName, inputStream, putObjectOptions);
+            // 返回访问路径
+            assert fileName != null;
+            return this.url + UriUtils.encode(fileName, StandardCharsets.UTF_8);
+        }
+    }
+
     public String createDir(String filepath) throws Exception {
         // bucket 不存在，创建
         if (!minioClient.bucketExists(this.bucket)) {

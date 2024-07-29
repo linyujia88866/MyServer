@@ -8,7 +8,6 @@ import cn.vo.FileVo;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,6 +44,21 @@ public class MinioController {
             finalPath = username + "/" + filepath;
         }
         return this.minioConfig.putObject(multipartFile, finalPath);
+    }
+
+    @PostMapping("/upload2")
+    public Object upload2(HttpServletRequest request, @RequestParam("file") MultipartFile multipartFile
+            , @RequestParam(value = "filepath") String filepath
+            , @RequestParam(value = "filename") String filename) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath;
+        if(filepath.equals("/")){
+            finalPath = username + "/";
+        } else {
+            finalPath = username + "/" + filepath;
+        }
+        return this.minioConfig.putObject(multipartFile, finalPath, filename);
     }
 
     @PostMapping("/createDir")
@@ -136,7 +150,6 @@ public class MinioController {
         String finalSrcPath= username + "/" + srcpath;
         String finalDesPath= username + "/" + despath;
         String bucketName = "test";
-
         return this.minioConfig.moveObject(bucketName, finalDesPath, finalSrcPath);
     }
 
@@ -149,7 +162,6 @@ public class MinioController {
         String finalSrcPath= username + "/" + srcpath;
         String finalDesPath= username + "/" + despath;
         String bucketName = "test";
-
         return this.minioConfig.copyObject(bucketName, finalDesPath, finalSrcPath);
     }
 
