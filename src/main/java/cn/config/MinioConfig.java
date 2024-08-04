@@ -316,7 +316,7 @@ public class MinioConfig implements InitializingBean {
     public boolean moveObject(String bucketName, String objectName, String srcObjectName) throws Exception {
         boolean flag = bucketExists(bucketName);
         if (flag) {
-            log.info("复制对象{}， {}", objectName, srcObjectName);
+            log.info("移动对象{} 到 {}", srcObjectName, objectName);
             minioClient.copyObject(bucketName, objectName, null, null,  bucketName, srcObjectName, null, null);
             log.info("删除对象{}", srcObjectName);
             minioClient.removeObject(bucketName, srcObjectName);
@@ -325,11 +325,47 @@ public class MinioConfig implements InitializingBean {
         return false;
     }
 
+    public boolean moveDir(String bucketName, String objectName, String srcObjectName) throws Exception {
+        boolean flag = bucketExists(bucketName);
+        String source = srcObjectName.endsWith("/") ? srcObjectName: srcObjectName +"/";
+        String target = objectName.endsWith("/") ? objectName: objectName +"/";
+        if (flag) {
+            log.info("移动对象{} 到 {}", srcObjectName, objectName);
+            List<String> fileList = listObjectNames("test", source, true);
+            for(String file : fileList){
+                String targetFileName = file.replace(source, target);
+                minioClient.copyObject(bucketName, targetFileName, null, null,  bucketName, file, null, null);
+                log.info("删除对象{}", srcObjectName);
+                minioClient.removeObject(bucketName, file);
+            }
+            return true;
+        }
+        return false;
+    }
+
     public boolean copyObject(String bucketName, String objectName, String srcObjectName) throws Exception {
         boolean flag = bucketExists(bucketName);
         if (flag) {
-            log.info("复制对象{}， {}", objectName, srcObjectName);
+            log.info("复制对象{}  到 {}", srcObjectName, objectName);
             minioClient.copyObject(bucketName, objectName, null, null,  bucketName, srcObjectName, null, null);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean copyDir(String bucketName, String objectName, String srcObjectName) throws Exception {
+        boolean flag = bucketExists(bucketName);
+        String source = srcObjectName.endsWith("/") ? srcObjectName: srcObjectName +"/";
+        String target = objectName.endsWith("/") ? objectName: objectName +"/";
+        if (flag) {
+            log.info("复制对象{}  到 {}", srcObjectName, objectName);
+            List<String> fileList = listObjectNames("test", source, true);
+            for(String file : fileList){
+                String targetFileName = file.replace(source, target);
+                log.info("源文件名称{}",file);
+                log.info("复制后名称{}",targetFileName);
+                minioClient.copyObject(bucketName, targetFileName, null, null,  bucketName, file, null, null);
+            }
             return true;
         }
         return false;

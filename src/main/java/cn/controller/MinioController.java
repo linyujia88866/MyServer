@@ -153,6 +153,17 @@ public class MinioController {
         return this.minioConfig.moveObject(bucketName, finalDesPath, finalSrcPath);
     }
 
+    @PostMapping("/moveDir")
+    public boolean moveDir(HttpServletRequest request,@RequestParam(value = "srcpath") String srcpath,
+                              @RequestParam(value = "despath") String despath) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalSrcPath= username + "/" + srcpath;
+        String finalDesPath= username + "/" + despath;
+        String bucketName = "test";
+        return this.minioConfig.moveDir(bucketName, finalDesPath, finalSrcPath);
+    }
+
 
     @PostMapping("/copyObject")
     public boolean copyObject(HttpServletRequest request,@RequestParam(value = "srcpath") String srcpath,
@@ -163,6 +174,17 @@ public class MinioController {
         String finalDesPath= username + "/" + despath;
         String bucketName = "test";
         return this.minioConfig.copyObject(bucketName, finalDesPath, finalSrcPath);
+    }
+
+    @PostMapping("/copyDir")
+    public boolean copyDir(HttpServletRequest request,@RequestParam(value = "srcpath") String srcpath,
+                              @RequestParam(value = "despath") String despath) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalSrcPath= username + "/" + srcpath;
+        String finalDesPath= username + "/" + despath;
+        String bucketName = "test";
+        return this.minioConfig.copyDir(bucketName, finalDesPath, finalSrcPath);
     }
 
 
