@@ -32,4 +32,8 @@ public class TaskService {
     public int updateTask(String taskId, String title, Timestamp createdAt, String content, String username) {
         return taskMapper.update(taskId, title,createdAt,content, username);
     }
+
+    public int deleteTask(String taskId,  String username) {
+        return taskMapper.delete(taskId,  username);
+    }
 }

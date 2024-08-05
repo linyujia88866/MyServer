@@ -15,7 +15,7 @@ import java.util.List;
 public interface ArticleMapper {
 
     //查询
-    @Select("select title, content from articles where articleId = #{articleId} and username = #{username} ")
+    @Select("select title, createdAt,content , username from articles where articleId = #{articleId} and username = #{username} ")
     Article findById(String articleId, String username);
 
     @Select("select articleId, title, createdAt from articles where username = #{username} ORDER BY createdAt DESC")

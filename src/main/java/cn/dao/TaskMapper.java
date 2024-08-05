@@ -3,10 +3,7 @@ package cn.dao;
 
 import cn.entity.Task;
 import cn.vo.TaskVo;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -26,4 +23,7 @@ public interface TaskMapper {
 
     @Update("UPDATE tasks SET title = #{title}, createdAt = #{createdAt}, content= #{content} WHERE taskId = #{taskId} and username = #{username}")
     int update(String taskId, String title, Timestamp createdAt, String content, String username);
+
+    @Delete("DELETE  FROM  tasks  WHERE taskId = #{taskId} and username = #{username}")
+    int delete(String taskId, String username);
 }

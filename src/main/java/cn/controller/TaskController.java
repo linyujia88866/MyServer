@@ -64,6 +64,15 @@ public class TaskController {
         return Result.success(res);
     }
 
+    @PostMapping("/delete/{taskId}")
+    @ResponseBody
+    public Result delete (HttpServletRequest request, @PathVariable String taskId) {
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        int res = taskService.deleteTask(taskId,  username);
+        log.info("保存任务{}成功！", taskId);
+        return Result.success(res);
+    }
+
     @GetMapping("/tasks")
     @ResponseBody
     public Result getAllTasks(HttpServletRequest request){
