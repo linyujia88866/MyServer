@@ -15,15 +15,35 @@ import java.util.List;
 public interface ArticleMapper {
 
     //查询
-    @Select("select title, createdAt,content , username from articles where articleId = #{articleId} and username = #{username} ")
-    Article findById(String articleId, String username);
+    @Select("select title, createdAt,content, username, publish, readCount, likeCount, commentCount from articles where articleId = #{articleId}  ")
+    Article findById(String articleId);
 
-    @Select("select articleId, title, createdAt from articles where username = #{username} ORDER BY createdAt DESC")
+    @Select("select articleId, title, createdAt, readCount, likeCount, commentCount from articles where username = #{username} ORDER BY createdAt DESC")
     List<ArticleVo> getAllArticles(String username);
-    //新增
-    @Insert("insert into articles(articleId, title, createdAt, content, username)" +"values  (#{articleId},#{title},#{createdAt},#{content},#{username})")
-    void add(String articleId, String title, Timestamp createdAt, String content, String username);
 
-    @Update("UPDATE articles SET title = #{title}, createdAt = #{createdAt}, content= #{content} WHERE articleId = #{articleId} and username = #{username}")
+    @Select("select articleId, title, createdAt, readCount, likeCount, commentCount from articles where username = #{username} and publish = #{publish} ORDER BY createdAt DESC")
+    List<ArticleVo> getAllArticles_(String username, int publish);
+
+    @Select("select articleId, title, createdAt, username, readCount, likeCount, commentCount from articles where publish = 1 ORDER BY createdAt DESC")
+    List<ArticleVo> getAllPubArticles_();
+    //新增
+    @Insert("insert into articles(articleId, title, createdAt, content, username, publish)" +
+            "values  (#{articleId},#{title},#{createdAt},#{content},#{username},#{publish})")
+    void add(String articleId, String title, Timestamp createdAt, String content, String username, boolean publish);
+
+    @Update("UPDATE articles SET title = #{title}, createdAt = #{createdAt}, content= #{content} WHERE articleId = #{articleId}")
     int update(String articleId, String title, Timestamp createdAt, String content, String username);
+
+    @Update("UPDATE articles SET readCount = readCount + 1 WHERE articleId = #{articleId}")
+    int addOneRead(String articleId);
+
+    @Update("UPDATE articles SET likeCount = likeCount + 1 WHERE articleId = #{articleId}")
+    int addOneLike(String articleId);
+
+    @Update("UPDATE articles SET likeCount = likeCount - 1 WHERE articleId = #{articleId}")
+    int deductOneLike(String articleId);
+
+
+    @Update("UPDATE articles SET publish = #{publish} WHERE articleId = #{articleId} and username = #{username}")
+    int publish(String articleId, String username, boolean publish);
 }

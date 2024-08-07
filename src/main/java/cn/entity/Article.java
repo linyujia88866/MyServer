@@ -7,4 +7,7 @@ public class Article {
     private String createdAt;
     private String content;
     private String username;
+    private int readCount;
+    private int likeCount;
+    private int commentCount;
 }

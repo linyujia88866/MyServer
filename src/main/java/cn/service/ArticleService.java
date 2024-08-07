@@ -18,18 +18,38 @@ public class ArticleService {
     @Autowired
     private ArticleMapper articleMapper;
 
-    public Article findById(String id, String username) {
-        return articleMapper.findById(id, username);
+    public Article findById(String id) {
+        return articleMapper.findById(id);
     }
 
     public List<ArticleVo> getAllArticles(String username) {
         return articleMapper.getAllArticles(username);
     }
 
-    public void saveArticle(String articleId, String title, Timestamp createdAt, String content, String username) {
-        articleMapper.add(articleId, title,createdAt,content, username);
+    public List<ArticleVo> getAllArticles(String username, int publish) {
+        return articleMapper.getAllArticles_(username, publish);
+    }
+
+    public List<ArticleVo> getAllPubArticles() {
+        return articleMapper.getAllPubArticles_();
+    }
+
+    public void saveArticle(String articleId, String title, Timestamp createdAt, String content, String username, boolean publish) {
+        articleMapper.add(articleId, title,createdAt,content, username, publish);
     }
     public int updateArticle(String articleId, String title, Timestamp createdAt, String content, String username) {
         return articleMapper.update(articleId, title,createdAt,content, username);
+    }
+
+    public int addOneRead(String articleId) {
+        return articleMapper.addOneRead(articleId);
+    }
+
+    public int addOneLike(String articleId) {
+        return articleMapper.addOneLike(articleId);
+    }
+
+    public int publishArticle(String articleId, String username) {
+        return articleMapper.publish(articleId, username,true);
     }
 }

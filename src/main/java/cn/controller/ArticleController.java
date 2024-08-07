@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 
 import static cn.utils.requestUtils.getTokenFromRequest;
 
@@ -38,6 +39,7 @@ public class ArticleController {
     public Result save (HttpServletRequest request,@RequestBody ArticleDto articledto) {
         String articleId = UuidUtil.getUuid();
         String title = articledto.getTitle();
+        boolean publish = articledto.getPublish();
 
         long currentTimeMillis = System.currentTimeMillis();
 
@@ -46,7 +48,7 @@ public class ArticleController {
         String content = articledto.getContent();
         log.info("保存文章{}成功！", articleId);
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
-        articleService.saveArticle(articleId, title, timestamp, content, username);
+        articleService.saveArticle(articleId, title, timestamp, content, username, publish);
         return Result.success(articleId);
     }
 
@@ -60,7 +62,32 @@ public class ArticleController {
         String content = articledto.getContent();
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
         int res = articleService.updateArticle(articleId, title, timestamp, content,username);
-        log.info("保存文章{}成功！", articleId);
+        log.info("更新文章{}成功！", articleId);
+        return Result.success(res);
+    }
+
+    @PostMapping("/addOneRead/{articleId}")
+    @ResponseBody
+    public Result addOneRead (@PathVariable String articleId) {
+        int res = articleService.addOneRead(articleId);
+        log.info("文章{}阅读数+1！", articleId);
+        return Result.success(res);
+    }
+
+    @PostMapping("/addOneLike/{articleId}")
+    @ResponseBody
+    public Result addOneLike (@PathVariable String articleId) {
+        int res = articleService.addOneLike(articleId);
+        log.info("文章{}点赞数+1！", articleId);
+        return Result.success(res);
+    }
+
+    @PostMapping("/publish/{articleId}")
+    @ResponseBody
+    public Result publish (HttpServletRequest request,@PathVariable String articleId) {
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        int res = articleService.publishArticle(articleId, username);
+        log.info("发布文章{}成功！", articleId);
         return Result.success(res);
     }
 
@@ -71,13 +98,41 @@ public class ArticleController {
         List<ArticleVo> res =  articleService.getAllArticles(username);
         return Result.success(res);
     }
+    @GetMapping("/pubArticles")
+    @ResponseBody
+    public Result getPublishArticles(HttpServletRequest request){
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        List<ArticleVo> res =  articleService.getAllArticles(username, 1);
+        log.info(res.toString());
+        return Result.success(res);
+    }
+
+    @GetMapping("/AllPubArticles")
+    @ResponseBody
+    public Result getAllPubArticles(){
+        List<ArticleVo> res =  articleService.getAllPubArticles();
+        return Result.success(res);
+    }
+
+    @GetMapping("/priArticles")
+    @ResponseBody
+    public Result getPrivateArticles(HttpServletRequest request){
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        List<ArticleVo> res =  articleService.getAllArticles(username, 0);
+        return Result.success(res);
+    }
 
 
     @GetMapping("/get/{articleId}")
     @ResponseBody
     public Result getArticleById(HttpServletRequest request, @PathVariable("articleId") String articleId){
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
-        Article res =  articleService.findById(articleId, username);
+        Article res =  articleService.findById(articleId);
+//        if(!Objects.equals(res.getUsername(), username)){
+//            log.info("文章作者和请求文章内容的用户不一致，所以阅读数量+1！");
+//            articleService.addOneRead(articleId);
+//        }
+        articleService.addOneRead(articleId);
         return Result.success(res);
     }
 }

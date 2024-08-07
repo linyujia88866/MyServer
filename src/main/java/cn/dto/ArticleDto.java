@@ -4,4 +4,5 @@ import lombok.Data;
 public class ArticleDto {
     private String title;
     private String content;
+    private Boolean publish;
 }
