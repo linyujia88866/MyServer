@@ -2,6 +2,7 @@ package cn.dao;
 
 
 import cn.entity.Article;
+import cn.entity.ArticleWithUser;
 import cn.vo.ArticleVo;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -39,6 +40,12 @@ public interface ArticleMapper {
 
     @Update("UPDATE articles SET likeCount = likeCount + 1 WHERE articleId = #{articleId}")
     int addOneLike(String articleId);
+
+    @Insert("insert into articles_users(articleId, userId) values (#{articleId},#{user_id})")
+    int addLikeToArt(String articleId, String user_id);
+
+    @Select("select * from articles_users where articleId = #{articleId} and  userId = #{user_id}")
+    ArticleWithUser checkLikeToArt(String articleId, String user_id);
 
     @Update("UPDATE articles SET likeCount = likeCount - 1 WHERE articleId = #{articleId}")
     int deductOneLike(String articleId);

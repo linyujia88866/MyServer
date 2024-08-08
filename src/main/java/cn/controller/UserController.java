@@ -34,7 +34,7 @@ public class UserController {
     @PostMapping("/register")
     public Result register (@RequestBody User user) {
         String uname = user.getUsername();
-        String id = user.getId();
+        String id = user.getUserId();
         boolean isValid;
         try {
             isValid=isValidCardId(String.valueOf(id));

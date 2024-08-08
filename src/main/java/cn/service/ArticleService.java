@@ -2,7 +2,10 @@ package cn.service;
 
 
 import cn.dao.ArticleMapper;
+import cn.dao.UserMapper;
 import cn.entity.Article;
+import cn.entity.ArticleWithUser;
+import cn.entity.User;
 import cn.vo.ArticleVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,8 @@ public class ArticleService {
 
     @Autowired
     private ArticleMapper articleMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     public Article findById(String id) {
         return articleMapper.findById(id);
@@ -47,6 +52,19 @@ public class ArticleService {
 
     public int addOneLike(String articleId) {
         return articleMapper.addOneLike(articleId);
+    }
+
+    public int addLikeToArt(String articleId, String username) {
+        User user = userMapper.findByUser(username);
+        String user_id = user.getUserId();
+        addOneLike(articleId);
+        return articleMapper.addLikeToArt(articleId, user_id);
+    }
+
+    public ArticleWithUser checkLikeToArt(String articleId, String username) {
+        User user = userMapper.findByUser(username);
+        String user_id = user.getUserId();
+        return articleMapper.checkLikeToArt(articleId, user_id);
     }
 
     public int publishArticle(String articleId, String username) {

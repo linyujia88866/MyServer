@@ -1,6 +1,7 @@
 package cn.controller;
 
 
+import cn.entity.ArticleWithUser;
 import cn.utils.JWTUtils;
 import cn.dto.ArticleDto;
 import cn.entity.Article;
@@ -74,13 +75,31 @@ public class ArticleController {
         return Result.success(res);
     }
 
-    @PostMapping("/addOneLike/{articleId}")
+    @PostMapping("/addLikeToArt/{articleId}")
     @ResponseBody
-    public Result addOneLike (@PathVariable String articleId) {
+    public Result addLikeToArt (HttpServletRequest request, @PathVariable String articleId) {
         int res = articleService.addOneLike(articleId);
         log.info("文章{}点赞数+1！", articleId);
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        log.info("用户{}给文章{}点赞了！",username, articleId);
+        articleService.addLikeToArt(articleId, username);
         return Result.success(res);
     }
+
+    @GetMapping("/checkLikeToArt/{articleId}")
+    @ResponseBody
+    public Result checkLikeToArt (HttpServletRequest request, @PathVariable String articleId) {
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+
+        ArticleWithUser res = articleService.checkLikeToArt(articleId, username);
+        if(res != null){
+            log.info("用户{}已经给文章{}点过赞了！",username, articleId);
+        } else {
+            log.info("用户{}还没有给文章{}点过赞！",username, articleId);
+        }
+        return Result.success(res);
+    }
+
 
     @PostMapping("/publish/{articleId}")
     @ResponseBody
