@@ -41,12 +41,12 @@ public class MyController {
             userFromDataBase = userService.findByUser(user);
             if(!Objects.equals(password, userFromDataBase.getPassword())){
                 returnEntity.setMsg("账号或密码错误");
-                returnEntity.setSuccess("500");
+                returnEntity.setCode("500");
                 return returnEntity;
             }
         } catch (Exception e) {
             returnEntity.setMsg("账号或密码错误");
-            returnEntity.setSuccess("500");
+            returnEntity.setCode("500");
             return returnEntity;
         }
 
@@ -57,7 +57,7 @@ public class MyController {
         String auth = String.valueOf(userFromDataBase.getAuthority());
         returnEntity.setData(auth);
         returnEntity.setMsg("登录成功");
-        returnEntity.setSuccess("200");
+        returnEntity.setCode("200");
         // 存储Token到Redis，假设用户名作为key
         redisTemplate.opsForValue().set(user, token, 60, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(user + "_auth", auth, 60, TimeUnit.MINUTES);
@@ -86,7 +86,7 @@ public class MyController {
         ReturnEntity returnEntity = new ReturnEntity();
         returnEntity.setData(authority);
         returnEntity.setMsg("成功");
-        returnEntity.setSuccess("200");
+        returnEntity.setCode("200");
         return returnEntity;
     }
 
@@ -100,11 +100,11 @@ public class MyController {
             redisTemplate.delete(userId);
             returnEntity.setData("success");
             returnEntity.setMsg("成功");
-            returnEntity.setSuccess("200");
+            returnEntity.setCode("200");
         }catch (Exception e){
             returnEntity.setData("failed");
             returnEntity.setMsg("登出失败");
-            returnEntity.setSuccess("500");
+            returnEntity.setCode("500");
         }
 
         return returnEntity;

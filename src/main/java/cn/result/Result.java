@@ -16,6 +16,10 @@ public class Result<T> {
         return new Result<>(200,"操作成功",data);
     }
 
+    public static <E> Result<E> success (E data, String msg) {
+        return new Result<>(200,msg,data);
+    }
+
     public static Result success() {
         return new Result(200,"操作成功",null);
     }

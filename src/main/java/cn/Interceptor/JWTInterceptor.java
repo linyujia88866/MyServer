@@ -44,20 +44,20 @@ public class JWTInterceptor implements HandlerInterceptor {
         } catch (SignatureVerificationException e){
             log.info("SignatureVerificationException: {}", e.getMessage());
             returnEntity.setMsg("无效签名");
-            returnEntity.setSuccess("10001");
+            returnEntity.setCode("10001");
         } catch (TokenExpiredException e){
             log.info("TokenExpiredException: {}", e.getMessage());
             returnEntity.setMsg("token过期");
-            returnEntity.setSuccess("10002");
+            returnEntity.setCode("10002");
         } catch (AlgorithmMismatchException e){
             log.info("AlgorithmMismatchException: {}", e.getMessage());
             //token算法不一致
             returnEntity.setMsg("无效签名");
-            returnEntity.setSuccess("10001");
+            returnEntity.setCode("10001");
         } catch (Exception e){
             log.info("Other exception: {}", e.getMessage());
             returnEntity.setMsg("token无效");
-            returnEntity.setSuccess("10003");
+            returnEntity.setCode("10003");
         }
         //将map转为json
         String json = new ObjectMapper().writeValueAsString(returnEntity);

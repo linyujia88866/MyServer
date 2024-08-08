@@ -7,5 +7,5 @@ import lombok.Data;
 public class ReturnEntity {
     private String msg;
     private String data;
-    private String success;
+    private String code;
 }
