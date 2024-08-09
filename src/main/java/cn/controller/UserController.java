@@ -35,6 +35,8 @@ public class UserController {
     public Result register (@RequestBody User user) {
         String uname = user.getUsername();
         String id = user.getUserId();
+        log.info(uname);
+        log.info(id);
         boolean isValid;
         try {
             isValid=isValidCardId(String.valueOf(id));

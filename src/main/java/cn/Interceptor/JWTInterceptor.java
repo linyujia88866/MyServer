@@ -1,7 +1,7 @@
 package cn.Interceptor;
 
+import cn.result.Result;
 import cn.utils.JWTUtils;
-import cn.entity.ReturnEntity;
 import com.auth0.jwt.exceptions.AlgorithmMismatchException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
@@ -29,7 +29,7 @@ public class JWTInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) throws Exception {
         log.info("request url is {}", request.getRequestURI());
-        ReturnEntity returnEntity = new ReturnEntity();
+        Result res = new Result();
         String token = getTokenFromRequest(request);
         try {
             String userId = JWTUtils.parseJWT(token);
@@ -43,24 +43,24 @@ public class JWTInterceptor implements HandlerInterceptor {
             return true;
         } catch (SignatureVerificationException e){
             log.info("SignatureVerificationException: {}", e.getMessage());
-            returnEntity.setMsg("无效签名");
-            returnEntity.setCode("10001");
+            res.setCode(10001);
+            res.setMessage("无效签名");
         } catch (TokenExpiredException e){
             log.info("TokenExpiredException: {}", e.getMessage());
-            returnEntity.setMsg("token过期");
-            returnEntity.setCode("10002");
+            res.setCode(10002);
+            res.setMessage("token过期");
         } catch (AlgorithmMismatchException e){
             log.info("AlgorithmMismatchException: {}", e.getMessage());
+            res.setCode(10001);
+            res.setMessage("无效签名");
             //token算法不一致
-            returnEntity.setMsg("无效签名");
-            returnEntity.setCode("10001");
         } catch (Exception e){
             log.info("Other exception: {}", e.getMessage());
-            returnEntity.setMsg("token无效");
-            returnEntity.setCode("10003");
+            res.setCode(10003);
+            res.setMessage("token无效");
         }
         //将map转为json
-        String json = new ObjectMapper().writeValueAsString(returnEntity);
+        String json = new ObjectMapper().writeValueAsString(res);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().println(json);
         return false;

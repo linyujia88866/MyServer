@@ -53,12 +53,22 @@ public class ArticleService {
     public int addOneLike(String articleId) {
         return articleMapper.addOneLike(articleId);
     }
+    public int deductOneLike(String articleId) {
+        return articleMapper.deductOneLike(articleId);
+    }
 
     public int addLikeToArt(String articleId, String username) {
         User user = userMapper.findByUser(username);
         String user_id = user.getUserId();
         addOneLike(articleId);
         return articleMapper.addLikeToArt(articleId, user_id);
+    }
+
+    public int deductLikeToArt(String articleId, String username) {
+        User user = userMapper.findByUser(username);
+        String user_id = user.getUserId();
+        deductOneLike(articleId);
+        return articleMapper.deductLikeToArt(articleId, user_id);
     }
 
     public ArticleWithUser checkLikeToArt(String articleId, String username) {

@@ -4,10 +4,7 @@ package cn.dao;
 import cn.entity.Article;
 import cn.entity.ArticleWithUser;
 import cn.vo.ArticleVo;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -44,10 +41,17 @@ public interface ArticleMapper {
     @Insert("insert into articles_users(articleId, userId) values (#{articleId},#{user_id})")
     int addLikeToArt(String articleId, String user_id);
 
+    @Delete("DELETE FROM articles_users WHERE articleId = #{articleId} and  userId = #{user_id}")
+    int deductLikeToArt(String articleId, String user_id);
+
     @Select("select * from articles_users where articleId = #{articleId} and  userId = #{user_id}")
     ArticleWithUser checkLikeToArt(String articleId, String user_id);
 
-    @Update("UPDATE articles SET likeCount = likeCount - 1 WHERE articleId = #{articleId}")
+    @Update("UPDATE articles SET likeCount = CASE " +
+            "WHEN likeCount > 1 THEN  likeCount - 1 " +
+            "ELSE likeCount " +
+            "END " +
+            "WHERE articleId = #{articleId}")
     int deductOneLike(String articleId);
 
 

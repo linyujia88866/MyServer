@@ -78,11 +78,20 @@ public class ArticleController {
     @PostMapping("/addLikeToArt/{articleId}")
     @ResponseBody
     public Result addLikeToArt (HttpServletRequest request, @PathVariable String articleId) {
-        int res = articleService.addOneLike(articleId);
         log.info("文章{}点赞数+1！", articleId);
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
         log.info("用户{}给文章{}点赞了！",username, articleId);
-        articleService.addLikeToArt(articleId, username);
+        int res = articleService.addLikeToArt(articleId, username);
+        return Result.success(res);
+    }
+
+    @PostMapping("/deductLikeToArt/{articleId}")
+    @ResponseBody
+    public Result deductLikeToArt (HttpServletRequest request, @PathVariable String articleId) {
+        log.info("文章{}点赞数-1！", articleId);
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        log.info("用户{}取消了对文章{}的点赞！",username, articleId);
+        int res = articleService.deductLikeToArt(articleId, username);
         return Result.success(res);
     }
 
