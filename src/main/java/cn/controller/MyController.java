@@ -74,7 +74,7 @@ public class MyController {
         String token = getTokenFromRequest(request);
         String username = JWTUtils.parseJWT(token);
         String authority = redisTemplate.opsForValue().get(username + "_auth");
-        return Result.success("鉴权成功", authority);
+        return Result.success(authority,"鉴权成功");
     }
 
     @PostMapping("/logout")

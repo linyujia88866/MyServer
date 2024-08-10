@@ -39,6 +39,12 @@ public class ArticleService {
         return articleMapper.getAllPubArticles_();
     }
 
+    public List<ArticleVo> getMyFavoriteArticles(String username) {
+        User user = userMapper.findByUser(username);
+        String userId = user.getUserId();
+        return articleMapper.getMyFavoriteArticles(userId);
+    }
+
     public void saveArticle(String articleId, String title, Timestamp createdAt, String content, String username, boolean publish) {
         articleMapper.add(articleId, title,createdAt,content, username, publish);
     }
@@ -55,6 +61,13 @@ public class ArticleService {
     }
     public int deductOneLike(String articleId) {
         return articleMapper.deductOneLike(articleId);
+    }
+
+    public int addOneGood(String articleId) {
+        return articleMapper.addOneGood(articleId);
+    }
+    public int deductOneGood(String articleId) {
+        return articleMapper.deductOneGood(articleId);
     }
 
     public int addLikeToArt(String articleId, String username) {
@@ -75,6 +88,26 @@ public class ArticleService {
         User user = userMapper.findByUser(username);
         String user_id = user.getUserId();
         return articleMapper.checkLikeToArt(articleId, user_id);
+    }
+
+    public int addGoodToArt(String articleId, String username) {
+        User user = userMapper.findByUser(username);
+        String user_id = user.getUserId();
+        addOneGood(articleId);
+        return articleMapper.addGoodToArt(articleId, user_id);
+    }
+
+    public int deductGoodToArt(String articleId, String username) {
+        User user = userMapper.findByUser(username);
+        String user_id = user.getUserId();
+        deductOneGood(articleId);
+        return articleMapper.deductGoodToArt(articleId, user_id);
+    }
+
+    public ArticleWithUser checkGoodToArt(String articleId, String username) {
+        User user = userMapper.findByUser(username);
+        String user_id = user.getUserId();
+        return articleMapper.checkGoodToArt(articleId, user_id);
     }
 
     public int publishArticle(String articleId, String username) {

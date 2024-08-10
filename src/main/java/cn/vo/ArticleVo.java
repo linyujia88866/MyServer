@@ -8,6 +8,7 @@ public class ArticleVo {
     private String createdAt;
     private String username;
     private int readCount;
+    private int goodCount;
     private int likeCount;
     private int commentCount;
 }

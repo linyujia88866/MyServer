@@ -9,5 +9,6 @@ public class Article {
     private String username;
     private int readCount;
     private int likeCount;
+    private int goodCount;
     private int commentCount;
 }

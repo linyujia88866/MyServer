@@ -109,6 +109,40 @@ public class ArticleController {
         return Result.success(res);
     }
 
+    @PostMapping("/addGoodToArt/{articleId}")
+    @ResponseBody
+    public Result addGoodToArt (HttpServletRequest request, @PathVariable String articleId) {
+        log.info("文章{}点赞数+1！", articleId);
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        log.info("用户{}给文章{}点赞了！",username, articleId);
+        int res = articleService.addGoodToArt(articleId, username);
+        return Result.success(res);
+    }
+
+    @PostMapping("/deductGoodToArt/{articleId}")
+    @ResponseBody
+    public Result deductGoodToArt (HttpServletRequest request, @PathVariable String articleId) {
+        log.info("文章{}点赞数-1！", articleId);
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        log.info("用户{}取消了对文章{}的点赞！",username, articleId);
+        int res = articleService.deductGoodToArt(articleId, username);
+        return Result.success(res);
+    }
+
+    @GetMapping("/checkGoodToArt/{articleId}")
+    @ResponseBody
+    public Result checkGoodToArt (HttpServletRequest request, @PathVariable String articleId) {
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+
+        ArticleWithUser res = articleService.checkGoodToArt(articleId, username);
+        if(res != null){
+            log.info("用户{}已经给文章{}点过赞了！",username, articleId);
+        } else {
+            log.info("用户{}还没有给文章{}点过赞！",username, articleId);
+        }
+        return Result.success(res);
+    }
+
 
     @PostMapping("/publish/{articleId}")
     @ResponseBody
@@ -142,6 +176,14 @@ public class ArticleController {
         return Result.success(res);
     }
 
+    @GetMapping("/MyFavoriteArticles")
+    @ResponseBody
+    public Result getMyFavoriteArticles(HttpServletRequest request){
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        List<ArticleVo> res =  articleService.getMyFavoriteArticles( username);
+        return Result.success(res);
+    }
+
     @GetMapping("/priArticles")
     @ResponseBody
     public Result getPrivateArticles(HttpServletRequest request){
@@ -155,12 +197,12 @@ public class ArticleController {
     @ResponseBody
     public Result getArticleById(HttpServletRequest request, @PathVariable("articleId") String articleId){
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        articleService.addOneRead(articleId);
         Article res =  articleService.findById(articleId);
 //        if(!Objects.equals(res.getUsername(), username)){
 //            log.info("文章作者和请求文章内容的用户不一致，所以阅读数量+1！");
 //            articleService.addOneRead(articleId);
 //        }
-        articleService.addOneRead(articleId);
         return Result.success(res);
     }
 }
