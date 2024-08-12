@@ -39,10 +39,10 @@ public class MyController {
         try {
             userFromDataBase = userService.findByUser(user);
             if(!Objects.equals(password, userFromDataBase.getPassword())){
-                return Result.error(500,"账号或密码错误");
+                return Result.error(50001,"账号或密码错误");
             }
         } catch (Exception e) {
-            return Result.error(500,"账号或密码错误");
+            return Result.error(50001,"账号或密码错误");
         }
 
         User4Token User4Token = new User4Token();
@@ -86,7 +86,7 @@ public class MyController {
             redisTemplate.delete(userId);
             return Result.success("success", "登出成功");
         }catch (Exception e){
-            return Result.error(500,"登出失败");
+            return Result.error(50002,"登出失败");
         }
     }
 }

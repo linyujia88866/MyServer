@@ -38,7 +38,8 @@ public class ArticleController {
     @PostMapping("/save")
     @ResponseBody
     public Result save (HttpServletRequest request,@RequestBody ArticleDto articledto) {
-        String articleId = UuidUtil.getUuid();
+        String articleId = articledto.getArticleId();
+//        String articleId = UuidUtil.getUuid();
         String title = articledto.getTitle();
         boolean publish = articledto.getPublish();
 
@@ -153,6 +154,15 @@ public class ArticleController {
         return Result.success(res);
     }
 
+    @PostMapping("/cancelPublish/{articleId}")
+    @ResponseBody
+    public Result cancelPublish (HttpServletRequest request,@PathVariable String articleId) {
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        int res = articleService.cancelPublishArticle(articleId, username);
+        log.info("取消发布文章{}成功！", articleId);
+        return Result.success(res);
+    }
+
     @GetMapping("/articles")
     @ResponseBody
     public Result getAllArticles(HttpServletRequest request){
@@ -199,6 +209,10 @@ public class ArticleController {
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
         articleService.addOneRead(articleId);
         Article res =  articleService.findById(articleId);
+        short publish = res.getPublish();
+        if(publish == 0 && !Objects.equals(res.getUsername(), username)){
+            return  Result.error(500, "你没有查看该文章的权限");
+        }
 //        if(!Objects.equals(res.getUsername(), username)){
 //            log.info("文章作者和请求文章内容的用户不一致，所以阅读数量+1！");
 //            articleService.addOneRead(articleId);

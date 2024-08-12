@@ -2,12 +2,15 @@ package cn.controller;
 
 
 import cn.config.MinioConfig;
+import cn.result.Result;
 import cn.utils.JWTUtils;
 import cn.utils.MinioDownloadUtil;
+import cn.utils.UuidUtil;
 import cn.vo.FileVo;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +35,12 @@ public class MinioController {
     @Autowired
     MinioDownloadUtil minioDownloadUtil;
 
+    @Value("${app.message}")
+    private String message;
+
+    @Value("${app.host}")
+    private String host;
+
     // 上传
     @PostMapping("/upload")
     public Object upload(HttpServletRequest request, @RequestParam("file") MultipartFile multipartFile, @RequestParam(value = "filepath") String filepath) throws Exception {
@@ -44,6 +53,17 @@ public class MinioController {
             finalPath = username + "/" + filepath;
         }
         return this.minioConfig.putObject(multipartFile, finalPath);
+    }
+
+    @PostMapping("/upload-art-pic")
+    public Object upload3(HttpServletRequest request, @RequestParam("file") MultipartFile multipartFile) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath= username + "/";
+        String filename = UuidUtil.getUuid() + multipartFile.getOriginalFilename();
+        String res =  this.minioConfig.putObject(multipartFile, finalPath, filename, "pic-link");
+        return res.replace("47.109.79.50:9000", this.host + "/share")
+                .replace("172.19.15.159:9000", this.host + "/share");
     }
 
     @PostMapping("/upload2")
@@ -59,6 +79,16 @@ public class MinioController {
             finalPath = username + "/" + filepath;
         }
         return this.minioConfig.putObject(multipartFile, finalPath, filename);
+    }
+
+    @GetMapping("/get-shared-link")
+    public Result<String> getSharedLink(HttpServletRequest request,@RequestParam String bucketName, @RequestParam String objectName, @RequestParam int expiresSeconds) throws InvalidBucketNameException, InsufficientDataException, ErrorResponseException, InvalidExpiresRangeException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        String finalPath = username + "/" + objectName;
+        String sharedLink = minioConfig.getSharedLink(bucketName, finalPath, expiresSeconds);
+        return Result.success(sharedLink.replace("47.109.79.50:9000", this.host + "/share")
+                .replace("172.19.15.159:9000", this.host + "/share"));
     }
 
     @PostMapping("/createDir")

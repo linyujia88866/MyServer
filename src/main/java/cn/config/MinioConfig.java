@@ -5,6 +5,8 @@ import io.minio.MinioClient;
 import io.minio.ObjectStat;
 import io.minio.PutObjectOptions;
 import io.minio.Result;
+import io.minio.errors.*;
+import io.minio.http.Method;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +20,12 @@ import org.springframework.web.util.UriUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +84,8 @@ public class MinioConfig implements InitializingBean {
         }
     }
 
+
+
     public String putObject(MultipartFile multipartFile, String filepath, String fileName) throws Exception {
         // bucket 不存在，创建
         if (!minioClient.bucketExists(this.bucket)) {
@@ -91,12 +98,34 @@ public class MinioConfig implements InitializingBean {
             PutObjectOptions putObjectOptions = new PutObjectOptions(multipartFile.getSize(), PutObjectOptions.MIN_MULTIPART_SIZE);
             // 文件的ContentType
             putObjectOptions.setContentType(multipartFile.getContentType());
-            log.info(filepath +fileName);
             minioClient.putObject(this.bucket, filepath +fileName, inputStream, putObjectOptions);
             // 返回访问路径
             assert fileName != null;
             return this.url + UriUtils.encode(fileName, StandardCharsets.UTF_8);
         }
+    }
+
+    public String putObject(MultipartFile multipartFile, String filepath, String fileName, String bucketName) throws Exception {
+        // bucket 不存在，创建
+        if (!minioClient.bucketExists(bucketName)) {
+            minioClient.makeBucket(bucketName);
+        }
+        try (InputStream inputStream = multipartFile.getInputStream()) {
+            // 上传文件的名称
+
+            // PutObjectOptions，上传配置(文件大小，内存中文件分片大小)
+            PutObjectOptions putObjectOptions = new PutObjectOptions(multipartFile.getSize(), PutObjectOptions.MIN_MULTIPART_SIZE);
+            // 文件的ContentType
+            putObjectOptions.setContentType(multipartFile.getContentType());
+            minioClient.putObject(bucketName, filepath +fileName, inputStream, putObjectOptions);
+            // 返回访问路径
+            assert fileName != null;
+            return this.host + "/"+bucketName +"/"+UriUtils.encode(filepath +fileName, StandardCharsets.UTF_8);
+        }
+    }
+
+    public String  getSharedLink(String bucketName, String objectName, int expiresSeconds) throws InvalidBucketNameException, InsufficientDataException, ErrorResponseException, InvalidExpiresRangeException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        return minioClient.getPresignedObjectUrl(Method.GET, bucketName, objectName, expiresSeconds, null);
     }
 
     public String createDir(String filepath) throws Exception {

@@ -113,4 +113,8 @@ public class ArticleService {
     public int publishArticle(String articleId, String username) {
         return articleMapper.publish(articleId, username,true);
     }
+
+    public int cancelPublishArticle(String articleId, String username) {
+        return articleMapper.publish(articleId, username,false);
+    }
 }

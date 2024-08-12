@@ -42,20 +42,20 @@ public class UserController {
             isValid=isValidCardId(String.valueOf(id));
         }catch (Exception e){
             log.info(e.getMessage());
-            return Result.error(333, "身份证号码校验失败！");
+            return Result.error(30001, "身份证号码校验失败！");
         }
         if(!isValid){
-            return Result.error(333, "身份证号码校验失败！");
+            return Result.error(30001, "身份证号码校验失败！");
         }
         String psw = user.getPassword();
         User byId =  userService.findById(id);
         User byuser =  userService.findByUser(uname);
         //查询数据库判断该用户是否存在
         if (byId != null){
-            return Result.error(333, "身份证号码已被注册！");
+            return Result.error(30001, "身份证号码已被注册！");
         } else if(byuser!=null){
             //不存在则注册成功，将用户名和密码添加到数据库中
-            return Result.error(333, "用户名已存在！");
+            return Result.error(30001, "用户名已存在！");
         }else {
             userService.register(String.valueOf(id), uname,psw);
             return Result.success("注册成功！");
@@ -78,7 +78,7 @@ public class UserController {
         String id = "test_" + uname;
         if(byuser!=null){
             //不存在则注册成功，将用户名和密码添加到数据库中
-            return Result.error(333, "用户名已存在！");
+            return Result.error(30001, "用户名已存在！");
         }else {
             userService.register(id, uname,psw);
             return Result.success("注册成功！");
@@ -90,7 +90,7 @@ public class UserController {
         String username = JWTUtils.parseJWT(token);
         User userFromDataBase = userService.findByUser(username);
         if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
-            return Result.error(500, "您不是超级管理员！");
+            return Result.error(40001, "您不是超级管理员！");
         }
         List<UserVo> res = userService.getAllUsers();
         return Result.success(res);
@@ -102,7 +102,7 @@ public class UserController {
         String username = JWTUtils.parseJWT(token);
         User userFromDataBase = userService.findByUser(username);
         if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
-            return Result.error(500, "您不是超级管理员！");
+            return Result.error(40001, "您不是超级管理员！");
         }
         User res = userService.findByUser(user.getUsername());
         return Result.success(res);

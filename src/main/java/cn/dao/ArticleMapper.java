@@ -84,6 +84,9 @@ public interface ArticleMapper {
     int deductOneGood(String articleId);
 
 
-    @Update("UPDATE articles SET publish = #{publish} WHERE articleId = #{articleId} and username = #{username}")
+    @Update("UPDATE articles SET publish = #{publish} WHERE articleId = #{articleId}")
     int publish(String articleId, String username, boolean publish);
+
+    @Update("UPDATE articles SET publish = #{publish} WHERE articleId = #{articleId}")
+    int cancelPublish(String articleId, String username, boolean publish);
 }
