@@ -26,6 +26,22 @@ public class UserServiceimpl implements UserService {
     public User findById(String id) {
         return userMapper.findById(id);
     }
+
+    @Override
+    public int deleteById(String id) {
+        return userMapper.deleteById(id);
+    }
+
+    @Override
+    public int freezeById(String id) {
+        return userMapper.freezeUser(id);
+    }
+
+    @Override
+    public int unFreezeById(String id) {
+        return userMapper.unFreezeUser(id);
+    }
+
     @Override
     public void register(String id, String uname, String psw) {
         int defaultAuthority = 10;
@@ -40,9 +56,6 @@ public class UserServiceimpl implements UserService {
 
     @Override
     public List<UserVo> getAllUsers() {
-        List<UserVo> res = userMapper.getAllUsers();
-        log.info(res.toString());
-        return res;
-//        return null;
+        return userMapper.getAllUsers();
     }
 }

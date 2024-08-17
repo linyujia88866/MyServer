@@ -6,4 +6,5 @@ public class UserVo {
     private String userId;
     private String username;
     private int authority;
+    private int status;
 }

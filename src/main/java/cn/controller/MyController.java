@@ -41,8 +41,11 @@ public class MyController {
             if(!Objects.equals(password, userFromDataBase.getPassword())){
                 return Result.error(50001,"账号或密码错误");
             }
+            if(userFromDataBase.getStatus() == 1){
+                return Result.error(50001,"账号已冻结");
+            }
         } catch (Exception e) {
-            return Result.error(50001,"账号或密码错误");
+            return Result.error(50001,"账号或密码错误1");
         }
 
         User4Token User4Token = new User4Token();

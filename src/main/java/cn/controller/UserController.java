@@ -35,8 +35,6 @@ public class UserController {
     public Result register (@RequestBody User user) {
         String uname = user.getUsername();
         String id = user.getUserId();
-        log.info(uname);
-        log.info(id);
         boolean isValid;
         try {
             isValid=isValidCardId(String.valueOf(id));
@@ -60,7 +58,6 @@ public class UserController {
             userService.register(String.valueOf(id), uname,psw);
             return Result.success("注册成功！");
         }
-
     }
 
 
@@ -105,6 +102,42 @@ public class UserController {
             return Result.error(40001, "您不是超级管理员！");
         }
         User res = userService.findByUser(user.getUsername());
+        return Result.success(res);
+    }
+
+    @DeleteMapping("/{userId}")
+    public Result deleteUser(HttpServletRequest request, @PathVariable String userId){
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        User userFromDataBase = userService.findByUser(username);
+        if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
+            return Result.error(40001, "您不是超级管理员！");
+        }
+        int res = userService.deleteById(userId);
+        return Result.success(res);
+    }
+
+    @PutMapping("/freeze/{userId}")
+    public Result freezeUser(HttpServletRequest request, @PathVariable String userId){
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        User userFromDataBase = userService.findByUser(username);
+        if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
+            return Result.error(40001, "您不是超级管理员！");
+        }
+        int res = userService.freezeById(userId);
+        return Result.success(res);
+    }
+
+    @PutMapping("/unfreeze/{userId}")
+    public Result unfreezeUser(HttpServletRequest request, @PathVariable String userId){
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        User userFromDataBase = userService.findByUser(username);
+        if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
+            return Result.error(40001, "您不是超级管理员！");
+        }
+        int res = userService.unFreezeById(userId);
         return Result.success(res);
     }
 }

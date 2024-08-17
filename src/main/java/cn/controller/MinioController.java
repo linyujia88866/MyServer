@@ -2,6 +2,9 @@ package cn.controller;
 
 
 import cn.config.MinioConfig;
+import cn.dao.UserMapper;
+import cn.entity.User;
+import cn.entity.ZoomData;
 import cn.result.Result;
 import cn.utils.JWTUtils;
 import cn.utils.MinioDownloadUtil;
@@ -31,6 +34,8 @@ public class MinioController {
 
     @Autowired
     MinioConfig minioConfig;
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     MinioDownloadUtil minioDownloadUtil;
@@ -52,7 +57,41 @@ public class MinioController {
         } else {
             finalPath = username + "/" + filepath;
         }
+        boolean isEnough =  checkZoom(multipartFile, username);
+        if(!isEnough){
+            return Result.error(60001, "剩余空间不够");
+        }
         return this.minioConfig.putObject(multipartFile, finalPath);
+    }
+
+    @GetMapping("/size-left")
+    public Result<ZoomData> getSizeLeft(HttpServletRequest request) throws Exception {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        User user = userMapper.findByUser(username);
+        ZoomData zoomData = new ZoomData();
+
+        long totalSize = this.minioConfig.calSizeOfFolder(username);
+        zoomData.setUsed(totalSize);
+        zoomData.setAll(user.getFileTotalSizeAllow());
+        zoomData.setLeft(user.getFileTotalSizeAllow() - totalSize);
+        return Result.success(zoomData);
+    }
+
+    public boolean checkZoom(MultipartFile multipartFile, String username) throws Exception {
+        long size = multipartFile.getSize();
+        log.info("当前正在上传的文件的大小");
+        long totalSize = this.minioConfig.calSizeOfFolder(username);
+        log.info("文件夹总大小为{}", totalSize);
+        User user = userMapper.findByUser(username);
+        if(user.getFileTotalSizeAllow() >  totalSize){
+            log.info("还有剩余空间{}",user.getFileTotalSizeAllow()-totalSize );
+        }
+        if(user.getFileTotalSizeAllow()  <  totalSize+ size){
+            log.info("剩余空间不足以支持上传本文件");
+            return  false;
+        }
+        return true;
     }
 
     @PostMapping("/upload-art-pic")
@@ -61,9 +100,13 @@ public class MinioController {
         String username = JWTUtils.parseJWT(token);
         String finalPath= username + "/";
         String filename = UuidUtil.getUuid() + multipartFile.getOriginalFilename();
+        boolean isEnough =  checkZoom(multipartFile, username);
+        if(!isEnough){
+            return Result.error(60001, "剩余空间不够");
+        }
         String res =  this.minioConfig.putObject(multipartFile, finalPath, filename, "pic-link");
-        return res.replace("47.109.79.50:9000", this.host + "/share")
-                .replace("172.19.15.159:9000", this.host + "/share");
+        return res.replace("http://47.109.79.50:9000", this.host + "/share")
+                .replace("http://172.19.15.159:9000", this.host + "/share");
     }
 
     @PostMapping("/upload2")
@@ -78,6 +121,10 @@ public class MinioController {
         } else {
             finalPath = username + "/" + filepath;
         }
+        boolean isEnough =  checkZoom(multipartFile, username);
+        if(!isEnough){
+            return Result.error(60001, "剩余空间不够");
+        }
         return this.minioConfig.putObject(multipartFile, finalPath, filename);
     }
 
@@ -87,8 +134,8 @@ public class MinioController {
         String username = JWTUtils.parseJWT(token);
         String finalPath = username + "/" + objectName;
         String sharedLink = minioConfig.getSharedLink(bucketName, finalPath, expiresSeconds);
-        return Result.success(sharedLink.replace("47.109.79.50:9000", this.host + "/share")
-                .replace("172.19.15.159:9000", this.host + "/share"));
+        return Result.success(sharedLink.replace("http://47.109.79.50:9000", this.host + "/share")
+                .replace("http://172.19.15.159:9000", this.host + "/share"));
     }
 
     @PostMapping("/createDir")

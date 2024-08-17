@@ -1,5 +1,6 @@
 package cn.config;
 
+import cn.entity.User;
 import cn.vo.FileVo;
 import io.minio.MinioClient;
 import io.minio.ObjectStat;
@@ -268,6 +269,17 @@ public class MinioConfig implements InitializingBean {
             return minioClient.listObjects(bucketName, prefix, withSub);
         }
         return null;
+    }
+
+    public long calSizeOfFolder(String prefix) throws Exception {
+        long totalSize = 0;
+        List<String> listObjectNames = new ArrayList<>();
+        Iterable<Result<Item>> res = listObjects("test", prefix, true);
+        for (Result<Item> result : res) {
+            Item item = result.get();
+            totalSize += item.size();
+        }
+        return totalSize;
     }
 
     /**

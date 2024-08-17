@@ -206,12 +206,15 @@ public class ArticleController {
     @GetMapping("/get/{articleId}")
     @ResponseBody
     public Result getArticleById(HttpServletRequest request, @PathVariable("articleId") String articleId){
-        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+//        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
         articleService.addOneRead(articleId);
         Article res =  articleService.findById(articleId);
         short publish = res.getPublish();
-        if(publish == 0 && !Objects.equals(res.getUsername(), username)){
-            return  Result.error(500, "你没有查看该文章的权限");
+        if(publish == 0){
+            String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+            if(!Objects.equals(res.getUsername(), username)){
+                return  Result.error(500, "你没有查看该文章的权限");
+            }
         }
 //        if(!Objects.equals(res.getUsername(), username)){
 //            log.info("文章作者和请求文章内容的用户不一致，所以阅读数量+1！");
