@@ -1,6 +1,5 @@
 package cn.config;
 
-import cn.entity.User;
 import cn.vo.FileVo;
 import io.minio.MinioClient;
 import io.minio.ObjectStat;
