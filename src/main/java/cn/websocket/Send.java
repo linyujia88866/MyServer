@@ -14,7 +14,7 @@ public class Send {
     @Resource
     private WebSocketServer webSocketServer;
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 30000)
     public void sendMsg() throws IOException {
         webSocketServer.sendAllMessage("hello"+new Date());
     }
