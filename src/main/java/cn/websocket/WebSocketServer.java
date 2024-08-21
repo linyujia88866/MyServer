@@ -4,16 +4,18 @@ import cn.bo.CheckSocketTokenBo;
 import cn.entity.Message;
 import cn.service.CheckSocketToken;
 import cn.utils.JWTUtils;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
-import com.alibaba.fastjson.JSON;
 
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -31,8 +33,6 @@ public class WebSocketServer {
     private Session session;
     /**接收userId*/
     private String userId="";
-
-
     /**
      * 连接建立成功调用的方法*/
     @OnOpen
@@ -46,31 +46,16 @@ public class WebSocketServer {
             return;
         }
 
-//        if(user != null){
-//            this.session = session;
-//            this.httpSession = httpSession;
-//        }else{
-//            //用户未登陆
-//            try {
-//                session.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
         String userId = JWTUtils.parseJWT(token);
         this.session = session;
 
         this.userId=userId;
         if(webSocketMap.containsKey(userId)){
             webSocketMap.remove(userId);
-//            webSocketMap2.remove(this);
             webSocketMap.put(userId,this);
-//            webSocketMap2.put(this, userId);
             //加入set中
         }else{
             webSocketMap.put(userId,this);
-//            webSocketMap2.put(this, userId);
             //加入set中
             addOnlineCount();
             //在线数加1
@@ -79,9 +64,16 @@ public class WebSocketServer {
         log.info("用户连接:"+userId+",当前在线人数为:" + getOnlineCount());
 
         try {
-            sendMessage("用户"+userId+"连接成功");
+            Message message = new Message();
+            message.setContent("用户"+userId+"连接成功");
+            message.setType("system_info");
+            message.setSender("system");
+            message.setReceiver(this.userId);
+            sendMessage(message);
         } catch (IOException e) {
             log.error("用户:"+userId+",网络异常!!!!!!");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -98,7 +90,6 @@ public class WebSocketServer {
 
         if(webSocketMap.containsKey(userId)){
             webSocketMap.remove(userId);
-//            webSocketMap2.remove(this);
             //从set中删除
             subOnlineCount();
         }
@@ -110,37 +101,47 @@ public class WebSocketServer {
      *
      * @param message 客户端发送过来的消息*/
     @OnMessage
-    public void onMessage(String message, Session session, EndpointConfig config) throws IOException {
+    public void onMessage(String message, Session session, EndpointConfig config) throws IOException, SQLException {
         log.info("用户消息:"+userId+",报文:"+message);
-        log.info(this.userId);
         Message userMessage = JSON.parseObject(message, Message.class);
         userMessage.setSender(this.userId);
         //  判断该消息是发给谁的
         if (userMessage.getReceiver().equals("all")){
-            // 发给所有人
-            for (WebSocketServer wsServer : webSocketMap.values()) {
-                if (webSocketMap.get(userMessage.getSender())!=wsServer){
-                    wsServer.session.getAsyncRemote().sendText(JSON.toJSONString(userMessage));
+            if(Objects.equals(userMessage.getType(), "system_notice")){
+                if(Objects.equals(this.userId, "admin")){
+                    // 发给所有人
+                    insertDataToAll(userMessage);
+                    for (WebSocketServer wsServer : webSocketMap.values()) {
+                        if (webSocketMap.get(userMessage.getSender())!=wsServer){
+                            userMessage.setReceiver(wsServer.userId);
+                            wsServer.session.getAsyncRemote().sendText(JSON.toJSONString(userMessage));
+                        }
+                    }
+                    return;
+                }else {
+                    Message message2 = new Message();
+                    message2.setReceiver(this.userId);
+                    message2.setContent("你不是管理员，不能发送通知");
+                    message2.setSender("system");
+                    message2.setType("system_info");
+                    DatabaseHelper.insertMessage(message2);
+                    sendMessage(message2);
                 }
+                return;
             }
-            return;
-        }
-        sendInfo(JSON.toJSONString(userMessage), userMessage.getReceiver());
-//        WebSocketServer wsServer = webSocketMap.get(userMessage.getReceiver());
-//        wsServer.session.getAsyncRemote().sendText(JSON.toJSONString(userMessage));
 
-        //可以群发消息
-        //消息保存到数据库、redis
-//        if(StringUtils.isNotBlank(message)){
-//            try {
-//                //解析发送的报文
-//                JSONObject jsonObject = JSON.parseObject(message);
-//
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-//        }
-//        sendMessage("收到");
+        }
+        // 发送消息给指定的用户，
+        DatabaseHelper.insertMessage(userMessage);
+        sendInfo(userMessage.getContent(), userMessage.getReceiver());
+    }
+
+    public void insertDataToAll(Message m) throws SQLException {
+        List<String> res = DatabaseHelper.getAllUsers();
+        for(String username : res){
+            m.setReceiver(username);
+            DatabaseHelper.insertMessage(m);
+        }
     }
 
     /**
@@ -158,33 +159,52 @@ public class WebSocketServer {
     /**
      * 实现服务器主动推送
      */
-    public void sendMessage(String message) throws IOException {
-        this.session.getBasicRemote().sendText(message);
+    public void sendMessage(Message message) throws IOException, SQLException {
+        DatabaseHelper.insertMessage(message);
+        this.session.getBasicRemote().sendText(JSON.toJSONString(message));
     }
 
 
     /**
      * 实现服务器主动推送
      */
-    public void sendAllMessage(String message) throws IOException {
+    public void sendAllMessage(Message message) throws IOException, SQLException {
         ConcurrentHashMap.KeySetView<String, WebSocketServer> userIds = webSocketMap.keySet();
         for (String userId : userIds) {
+            message.setReceiver(userId);
             WebSocketServer webSocketServer = webSocketMap.get(userId);
-            webSocketServer.session.getBasicRemote().sendText(message);
+            webSocketServer.session.getBasicRemote().sendText(JSON.toJSONString(message));
+            DatabaseHelper.insertMessage(message);
         }
     }
 
     /**
      * 发送自定义消息
      * */
-    public void sendInfo(String message, String userId) throws IOException {
+    public void sendInfo(String message, String userId) throws IOException, SQLException {
         log.info("发送消息到:"+userId+"，报文:"+message);
         if(StringUtils.isNotBlank(userId)&&webSocketMap.containsKey(userId)){
-            webSocketMap.get(userId).sendMessage(message);
-            sendMessage("已将消息发送给用户"+userId);
+            Message message1 = new Message();
+            message1.setReceiver(userId);
+            message1.setContent(message);
+            message1.setSender(this.userId);
+            webSocketMap.get(userId).sendMessage(message1);
+
+            Message message2 = new Message();
+            message2.setReceiver(this.userId);
+            message2.setContent("已将消息发送给用户"+userId);
+            message2.setSender("system");
+            message2.setType("system_info");
+            sendMessage(message2);
         }else{
+            Message message3 = new Message();
+            message3.setReceiver(this.userId);
+            message3.setContent("用户"+userId+",不在线！");
+            message3.setSender("system");
+            message3.setType("system_info");
+            sendMessage(message3);
             log.error("用户"+userId+",不在线！");
-            sendMessage("用户"+userId+",不在线！");
+            sendMessage(message3);
         }
     }
 

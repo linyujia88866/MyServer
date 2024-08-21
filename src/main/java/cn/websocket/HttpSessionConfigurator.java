@@ -43,8 +43,6 @@ public class HttpSessionConfigurator extends Configurator {
                         token = res2.get(1);
                     }
                 }
-//                List<String> res1 = Arrays.asList(res.get(1).split("="));
-//                token = res1.get(1);
             }
         } catch (Exception e){
             token = "";
