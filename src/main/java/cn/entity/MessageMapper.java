@@ -11,18 +11,15 @@ import java.util.List;
 public interface MessageMapper extends JpaRepository<Message, Long> {
     // 自定义更新方法
     @Modifying
-    @Query("update Message me set me.status = ?1 where me.messageId = ?2")
-    void updateStatusById(int status, Long id);
+    @Query(value = "update messages set status = ?1 where message_id = ?2", nativeQuery = true)
+    void updateStatusById(Integer status, Long id);
 
-    @Query(value = "select * from messages where receiver = ?1 and status = 0", nativeQuery = true)
-    List<Message> getAllNotRead(String username);
+    @Query(value = "select * from messages where message_id = ?1", nativeQuery = true)
+    Message getMsgById(long msgId);
 
-    @Query(value = "select * from messages where receiver = ?1 and status = 0 and type='system_notice'", nativeQuery = true)
+    @Query(value = "select * from messages where receiver = ?1 and type=2 or type= 3", nativeQuery = true)
     List<Message> getAllNotReadNotice(String username);
 
-    @Query(value = "select count(*) from messages where receiver = ?1 and status = 0", nativeQuery = true)
-    long countAllNotRead(String username);
-
-    @Query(value = "select count(*) from messages where receiver = ?1 and status = 0 and type='system_notice'", nativeQuery = true)
+    @Query(value = "select count(*) from messages where receiver = ?1 and status = 0 and type = 2 or type= 3", nativeQuery = true)
     long countAllNotReadNotice(String username);
 }

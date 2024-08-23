@@ -6,10 +6,7 @@ import cn.service.MySocketService;
 import cn.utils.JWTUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -36,6 +33,18 @@ public class MessageController {
     public Result countAllNotRead (HttpServletRequest request) {
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
         long res =  mySocketService.countAllNotReadNotice(username);
+        log.info("共找到{}条消息", res);
+        return Result.success(res);
+    }
+
+    @PutMapping("/{msgId}")
+    @ResponseBody
+    public Result changeMsgStatus (HttpServletRequest request,@PathVariable long msgId) {
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        long res =  mySocketService.changeMsgStatus(username, msgId);
+        if(res==0){
+            return Result.error(70001, "你不是该消息的接收者，无法修改状态");
+        }
         return Result.success(res);
     }
 }

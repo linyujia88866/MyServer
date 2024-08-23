@@ -1,10 +1,6 @@
 package cn.websocket;
 
 import cn.entity.Message;
-import cn.entity.User;
-import cn.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -28,7 +24,14 @@ public class DatabaseHelper {
         Driver driver = new com.mysql.jdbc.Driver();
 
         // 编写连接数据库的url,用户名和密码(保存在Properties对象中,user和password是规定好的键名)
-        String url = "jdbc:mysql://47.109.79.50:3306/liyan";
+        String osName = System.getProperty("os.name");
+        String url;
+        if(osName.contains("Windows")){
+            url = "jdbc:mysql://47.109.79.50:3306/liyan";
+        }else {
+            url="jdbc:mysql://172.19.15.159:3306/liyan";
+        }
+
         Properties properties = new Properties();
         properties.setProperty("user", "newuser");
         properties.setProperty("password", "newpassword");
@@ -99,7 +102,7 @@ public class DatabaseHelper {
             pstmt.setString(1, message.getSender());
             pstmt.setString(2, message.getReceiver());
             pstmt.setString(3, message.getContent());
-            pstmt.setString(4, message.getType());
+            pstmt.setInt(4, message.getType());
 
             pstmt.executeUpdate(); // 执行更新操作
         } finally {

@@ -2,6 +2,7 @@ package cn.websocket;
 
 import cn.bo.CheckSocketTokenBo;
 import cn.entity.Message;
+import cn.enums.MessageType;
 import cn.service.CheckSocketToken;
 import cn.utils.JWTUtils;
 import com.alibaba.fastjson.JSON;
@@ -19,7 +20,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-@ServerEndpoint(value = "/websocket" , configurator = HttpSessionConfigurator.class)
+@ServerEndpoint(value = "/websocket/link" , configurator = HttpSessionConfigurator.class)
 @Component
 @Slf4j
 public class WebSocketServer {
@@ -66,7 +67,7 @@ public class WebSocketServer {
         try {
             Message message = new Message();
             message.setContent("用户"+userId+"连接成功");
-            message.setType("system_info");
+            message.setType(MessageType.system_info.getCode());
             message.setSender("system");
             message.setReceiver(this.userId);
             sendMessage(message);
@@ -107,7 +108,7 @@ public class WebSocketServer {
         userMessage.setSender(this.userId);
         //  判断该消息是发给谁的
         if (userMessage.getReceiver().equals("all")){
-            if(Objects.equals(userMessage.getType(), "system_notice")){
+            if(Objects.equals(userMessage.getType(), MessageType.system_notice.getCode())){
                 if(Objects.equals(this.userId, "admin")){
                     // 发给所有人
                     insertDataToAll(userMessage);
@@ -123,7 +124,7 @@ public class WebSocketServer {
                     message2.setReceiver(this.userId);
                     message2.setContent("你不是管理员，不能发送通知");
                     message2.setSender("system");
-                    message2.setType("system_info");
+                    message2.setType(MessageType.system_info.getCode());
                     DatabaseHelper.insertMessage(message2);
                     sendMessage(message2);
                 }
@@ -194,14 +195,14 @@ public class WebSocketServer {
             message2.setReceiver(this.userId);
             message2.setContent("已将消息发送给用户"+userId);
             message2.setSender("system");
-            message2.setType("system_info");
+            message2.setType(MessageType.system_info.getCode());
             sendMessage(message2);
         }else{
             Message message3 = new Message();
             message3.setReceiver(this.userId);
             message3.setContent("用户"+userId+",不在线！");
             message3.setSender("system");
-            message3.setType("system_info");
+            message3.setType(MessageType.system_info.getCode());
             sendMessage(message3);
             log.error("用户"+userId+",不在线！");
             sendMessage(message3);

@@ -1,5 +1,6 @@
 package cn.entity;
 
+import cn.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,6 @@ public class Message {
      */
     private String content;
 
-    private String type = "simple_message";
+    private Integer type = MessageType.simple_message.getCode();
     private int status = 0;
 }
