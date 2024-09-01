@@ -14,12 +14,24 @@ public interface MessageMapper extends JpaRepository<Message, Long> {
     @Query(value = "update messages set status = ?1 where message_id = ?2", nativeQuery = true)
     void updateStatusById(Integer status, Long id);
 
-    @Query(value = "select * from messages where message_id = ?1", nativeQuery = true)
+    @Query(value = "select message_id, sender, receiver, content, type, status, " +
+            "ADDDATE(created_at, INTERVAL 8 HOUR) as created_at, " +
+            "ADDDATE(updated_at, INTERVAL 8 HOUR) as updated_at" +
+            " from messages where message_id = ?1", nativeQuery = true)
     Message getMsgById(long msgId);
 
-    @Query(value = "select * from messages where receiver = ?1 and (type=2 or type= 3)", nativeQuery = true)
+    @Query(value = "select message_id, sender, receiver, content, type, status, " +
+            "ADDDATE(created_at, INTERVAL 8 HOUR) as created_at, " +
+            "ADDDATE(updated_at, INTERVAL 8 HOUR) as updated_at" +
+            " from messages where receiver = ?1 and (type > 1)", nativeQuery = true)
     List<Message> getAllNotReadNotice(String username);
 
-    @Query(value = "select count(*) from messages where receiver = ?1 and status = 0 and (type=2 or type= 3)", nativeQuery = true)
+    @Query(value = "select message_id, sender, receiver, content, type, status, " +
+            "ADDDATE(created_at, INTERVAL 8 HOUR) as created_at, " +
+            "ADDDATE(updated_at, INTERVAL 8 HOUR) as updated_at " +
+            "from messages where sender = ?1 and (type > 1)", nativeQuery = true)
+    List<Message> getAllMySend(String username);
+
+    @Query(value = "select count(*) from messages where receiver = ?1 and status = 0 and (type > 1)", nativeQuery = true)
     long countAllNotReadNotice(String username);
 }

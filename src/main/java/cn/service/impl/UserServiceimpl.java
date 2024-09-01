@@ -41,6 +41,10 @@ public class UserServiceimpl implements UserService {
     public int unFreezeById(String id) {
         return userMapper.unFreezeUser(id);
     }
+    @Override
+    public int expansionById(String id, long size) {
+        return userMapper.expansionUser(id, size);
+    }
 
     @Override
     public void register(String id, String uname, String psw) {

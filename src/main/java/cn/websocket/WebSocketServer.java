@@ -133,8 +133,8 @@ public class WebSocketServer {
 
         }
         // 发送消息给指定的用户，
-        DatabaseHelper.insertMessage(userMessage);
-        sendInfo(userMessage.getContent(), userMessage.getReceiver());
+//        DatabaseHelper.insertMessage(userMessage);
+        sendInfo(userMessage.getContent(), userMessage.getReceiver(), userMessage.getType());
     }
 
     public void insertDataToAll(Message m) throws SQLException {
@@ -182,13 +182,14 @@ public class WebSocketServer {
     /**
      * 发送自定义消息
      * */
-    public void sendInfo(String message, String userId) throws IOException, SQLException {
+    public void sendInfo(String message, String userId, int type) throws IOException, SQLException {
         log.info("发送消息到:"+userId+"，报文:"+message);
         if(StringUtils.isNotBlank(userId)&&webSocketMap.containsKey(userId)){
             Message message1 = new Message();
             message1.setReceiver(userId);
             message1.setContent(message);
             message1.setSender(this.userId);
+            message1.setType(type);
             webSocketMap.get(userId).sendMessage(message1);
 
             Message message2 = new Message();
@@ -205,7 +206,6 @@ public class WebSocketServer {
             message3.setType(MessageType.system_info.getCode());
             sendMessage(message3);
             log.error("用户"+userId+",不在线！");
-            sendMessage(message3);
         }
     }
 

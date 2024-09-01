@@ -21,6 +21,9 @@ public interface UserMapper {
     @Update("UPDATE users SET status=0 where userId = #{id}")
     int unFreezeUser(String id);
 
+    @Update("UPDATE users SET fileTotalSizeAllow=#{size} where userId = #{id}")
+    int expansionUser(String id, long size);
+
     @Delete("DELETE FROM  users where userId = #{id}")
     int deleteById(String id);
     //新增

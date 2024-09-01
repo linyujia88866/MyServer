@@ -5,8 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
+import java.time.Instant;
+import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,4 +36,10 @@ public class Message {
 
     private Integer type = MessageType.simple_message.getCode();
     private int status = 0;
+
+
+    private Date createdAt;
+
+
+    private Date updatedAt;
 }

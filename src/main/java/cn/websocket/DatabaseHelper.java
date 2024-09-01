@@ -1,6 +1,7 @@
 package cn.websocket;
 
 import cn.entity.Message;
+import cn.enums.MessageType;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -91,6 +92,10 @@ public class DatabaseHelper {
     }
 
     public static void insertMessage(Message message) throws SQLException {
+        if(message.getType() == MessageType.heartbeat.getCode()) {
+//            System.out.println("心跳不存数据库");
+            return;
+        }
         Connection conn = null;
         PreparedStatement pstmt = null;
 

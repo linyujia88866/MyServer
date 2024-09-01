@@ -10,7 +10,8 @@ public enum MessageType {
     system_info(1, "system_info"),
     system_notice(2, "system_notice"),
     disk_expansion_application(3, "disk_expansion_application"),
-    heartbeat(4, "heartbeat");
+    heartbeat(4, "heartbeat"),
+    disk_expansion_application_deal(5, "disk_expansion_application_deal");
 
     private final int code;
     private final String value;

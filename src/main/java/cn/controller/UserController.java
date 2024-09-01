@@ -140,4 +140,20 @@ public class UserController {
         int res = userService.unFreezeById(userId);
         return Result.success(res);
     }
+
+    @PutMapping("/expansion/{userId}")
+    public Result expansionUser(HttpServletRequest request, @PathVariable String userId,
+                                @RequestParam(value = "size") long size){
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        User userFromDataBase = userService.findByUser(username);
+        if(!Objects.equals(userFromDataBase.getAuthority(), 0)){
+            return Result.error(40001, "您不是超级管理员！");
+        }
+
+        User userTarget = userService.findById(userId);
+        long already = userTarget.getFileTotalSizeAllow();
+        int res = userService.expansionById(userId, size + already);
+        return Result.success(res);
+    }
 }

@@ -17,7 +17,7 @@ public class Send {
     @Resource
     private WebSocketServer webSocketServer;
 
-    @Scheduled(fixedDelay = 24*3600*3)
+    @Scheduled(fixedDelay = 10000)
     public void sendMsg() throws IOException, SQLException {
         Message message = new Message();
         message.setSender("system");
