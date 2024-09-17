@@ -161,7 +161,7 @@ public class MinioConfig implements InitializingBean {
             IOUtils.copy(inputStream, response.getOutputStream());
             inputStream.close();
         } catch (Exception e){
-            System.out.println("有异常：" + e);
+            log.error("有异常", e);
         }
     }
 

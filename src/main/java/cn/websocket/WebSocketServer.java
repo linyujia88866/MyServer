@@ -6,6 +6,7 @@ import cn.enums.MessageType;
 import cn.service.CheckSocketToken;
 import cn.utils.JWTUtils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -104,7 +105,13 @@ public class WebSocketServer {
     @OnMessage
     public void onMessage(String message, Session session, EndpointConfig config) throws IOException, SQLException {
         log.info("用户消息:"+userId+",报文:"+message);
-        Message userMessage = JSON.parseObject(message, Message.class);
+        Message userMessage;
+        try {
+            userMessage = JSON.parseObject(message, Message.class);
+        }catch (JSONException e){
+            log.error("json解析错误");
+            return;
+        }
         userMessage.setSender(this.userId);
         //  判断该消息是发给谁的
         if (userMessage.getReceiver().equals("all")){

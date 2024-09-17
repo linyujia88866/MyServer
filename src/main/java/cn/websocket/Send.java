@@ -17,7 +17,8 @@ public class Send {
     @Resource
     private WebSocketServer webSocketServer;
 
-    @Scheduled(fixedDelay = 10000)
+//    每分钟通知一次时间
+    @Scheduled(fixedDelay = 60000)
     public void sendMsg() throws IOException, SQLException {
         Message message = new Message();
         message.setSender("system");

@@ -50,7 +50,7 @@ public class MySocketService {
         if(Objects.equals(msg.getReceiver(), username)){
             messageMapper.updateStatusById(status, msgId);
             if(status ==2){
-                System.out.println("修改用户的可用空间数据");
+                log.info("修改用户的可用空间数据");
                 String owner = msg.getSender();
                 String content = msg.getContent();
                 JSONObject jsonObject = new JSONObject(content);

@@ -81,6 +81,14 @@ public class MyController {
         return Result.success(authority,"鉴权成功");
     }
 
+    @PostMapping("/current-user")
+    @ResponseBody
+    public Result curUser(HttpServletRequest request) {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        return Result.success(username,"鉴权成功");
+    }
+
     @PostMapping("/logout")
     @ResponseBody
     public Result logout(HttpServletRequest request) {
