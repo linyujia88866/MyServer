@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Component
@@ -345,6 +346,7 @@ public class MinioConfig implements InitializingBean {
      * @param objectName 存储桶里的对象名称
      */
     public boolean removeObject(String bucketName, String objectName) throws Exception {
+        log.info("removeObject, {}, {}", bucketName, objectName);
         boolean flag = bucketExists(bucketName);
         if (flag) {
             minioClient.removeObject(bucketName, objectName);
@@ -434,6 +436,27 @@ public class MinioConfig implements InitializingBean {
             url = minioClient.getObjectUrl(bucketName, objectName);
         }
         return url;
+    }
+
+    /**
+     * 判断文件路径是否存在
+     *
+     * @param bucketName 存储桶名称
+     * @param objectName 存储桶里的对象名称
+     */
+    public boolean isObjectExist(String bucketName, String objectName) throws Exception {
+        boolean flag = bucketExists(bucketName);
+        String url = "";
+        if (flag) {
+            try {
+                url = minioClient.getObjectUrl(bucketName, objectName);
+                return !Objects.equals(url, "");
+            } catch (Exception e){
+                return false;
+            }
+
+        }
+        return false;
     }
 
 }

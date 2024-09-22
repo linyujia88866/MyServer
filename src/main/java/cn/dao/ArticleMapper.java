@@ -42,8 +42,6 @@ public interface ArticleMapper {
     @Update("UPDATE articles SET readCount = readCount + 1 WHERE articleId = #{articleId}")
     int addOneRead(String articleId);
 
-
-
     @Insert("insert into articles_users_like(articleId, userId) values (#{articleId},#{user_id})")
     int addLikeToArt(String articleId, String user_id);
 
@@ -62,7 +60,6 @@ public interface ArticleMapper {
             "END " +
             "WHERE articleId = #{articleId}")
     int deductOneLike(String articleId);
-
 
     @Insert("insert into articles_users_good(articleId, userId) values (#{articleId},#{user_id})")
     int addGoodToArt(String articleId, String user_id);

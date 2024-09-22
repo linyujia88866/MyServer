@@ -1,6 +1,7 @@
 package cn.controller;
 
 
+import cn.dao.ArticleLinkMapper;
 import cn.dto.ArticleDto;
 import cn.entity.Article;
 import cn.entity.ArticleWithUser;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 
+import static cn.service.HtmlImageExtractor.extractImageUrls;
 import static cn.utils.requestUtils.getTokenFromRequest;
 
 @RestController
@@ -27,6 +30,9 @@ public class ArticleController {
     //注入userService
     @Autowired
     private ArticleService articleService;
+
+    @Autowired
+    private ArticleLinkMapper articleLinkMapper;
 
     /**
      * 用户注册接口
@@ -43,10 +49,14 @@ public class ArticleController {
         boolean publish = articledto.getPublish();
 
         long currentTimeMillis = System.currentTimeMillis();
-
+        log.info("currentTimeMillis, {}", currentTimeMillis);
         // 将当前时间戳转换为java.sql.Timestamp
         Timestamp timestamp = new Timestamp(currentTimeMillis);
+        log.info("create time, {}", timestamp);
         String content = articledto.getContent();
+        List<String> imgSrcs = extractImageUrls(content);
+        articleLinkMapper.insertLink(articleId, imgSrcs.toString());
+
         log.info("保存文章{}成功！", articleId);
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
         articleService.saveArticle(articleId, title, timestamp, content, username, publish);
@@ -198,6 +208,12 @@ public class ArticleController {
     public Result getPrivateArticles(HttpServletRequest request){
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
         List<ArticleVo> res =  articleService.getAllArticles(username, 0);
+        for(ArticleVo articleVo: res){
+             Timestamp timestamp = articleVo.getCreatedAt();
+             Long x = timestamp.getTime();
+             log.info("{}", articleVo.getTitle());
+             log.info("时间戳{}", x);
+        }
         return Result.success(res);
     }
 

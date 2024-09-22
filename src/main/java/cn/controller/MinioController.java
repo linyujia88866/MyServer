@@ -2,6 +2,7 @@ package cn.controller;
 
 
 import cn.config.MinioConfig;
+import cn.dao.ArticleLinkMapper;
 import cn.dao.UserMapper;
 import cn.entity.User;
 import cn.entity.ZoomData;
@@ -39,6 +40,9 @@ public class MinioController {
 
     @Autowired
     MinioDownloadUtil minioDownloadUtil;
+
+    @Autowired
+    private ArticleLinkMapper articleLinkMapper;
 
     @Value("${app.message}")
     private String message;
@@ -95,7 +99,8 @@ public class MinioController {
     }
 
     @PostMapping("/upload-art-pic")
-    public Object upload3(HttpServletRequest request, @RequestParam("file") MultipartFile multipartFile) throws Exception {
+    public Object upload3(HttpServletRequest request, @RequestParam("file") MultipartFile multipartFile,
+                          @RequestParam("article_id") String articleId) throws Exception {
         String token = getTokenFromRequest(request);
         String username = JWTUtils.parseJWT(token);
         String finalPath= username + "/";
@@ -105,6 +110,8 @@ public class MinioController {
             return Result.error(60001, "剩余空间不够");
         }
         String res =  this.minioConfig.putObject(multipartFile, finalPath, filename, "pic-link");
+        articleLinkMapper.insertLinkEach(articleId, res.replace("http://47.109.79.50:9000/", "")
+                .replace("http://172.19.15.159:9000/", "").replace("%2F","/"));
         return res.replace("http://47.109.79.50:9000", this.host + "/share")
                 .replace("http://172.19.15.159:9000", this.host + "/share");
     }
