@@ -22,6 +22,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         //下面list是放行swagger
         List<String> l=new ArrayList<String>();
         l.add("/login");
+        l.add("/test/**");
         l.add("/logout");
         l.add("/css/**");
         l.add("/js/**");

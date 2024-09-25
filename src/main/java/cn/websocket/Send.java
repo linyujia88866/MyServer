@@ -9,8 +9,10 @@ import cn.enums.MessageType;
 import cn.vo.LinkVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -42,6 +44,13 @@ public class Send {
         message.setType(MessageType.heartbeat.getCode());
         message.setContent("Hello, "+new Date());
         webSocketServer.sendAllMessage(message);
+    }
+    @Scheduled(fixedDelay = 500000000)
+    public void testSchedule() {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://127.0.0.1:9802/test/bbb?id={5}&jd={2}";
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class, "你好", "ddd", "ccc", "bbb");
+        log.info("{}", response.getBody());
     }
 
     @Scheduled(cron = "0 0 2 * * *")
