@@ -265,7 +265,9 @@ public class MinioConfig implements InitializingBean {
 
     public Iterable<Result<Item>> listObjects(String bucketName, String prefix, boolean withSub) throws Exception {
         boolean flag = bucketExists(bucketName);
+        log.info("bucket is exist, {}", bucketName);
         if (flag) {
+            log.info("list Objects in bucket {}", bucketName);
             return minioClient.listObjects(bucketName, prefix, withSub);
         }
         return null;
@@ -273,8 +275,12 @@ public class MinioConfig implements InitializingBean {
 
     public long calSizeOfFolder(String prefix) throws Exception {
         long totalSize = 0;
-        List<String> listObjectNames = new ArrayList<>();
+        log.info("calSizeOfFolder, prefix, {}",  prefix);
         Iterable<Result<Item>> res = listObjects("test", prefix, true);
+        if(res == null){
+            log.info("没有找到对象, calSizeOfFolder");
+            return 0;
+        }
         for (Result<Item> result : res) {
             Item item = result.get();
             totalSize += item.size();
@@ -304,8 +310,14 @@ public class MinioConfig implements InitializingBean {
     public List<FileVo> listObjectProperties(String bucketName, String prefix) throws Exception {
         List<FileVo> listObjectProperties = new ArrayList<>();
         boolean flag = bucketExists(bucketName);
+        log.info("listObjectProperties, prefix, {}",  prefix);
         if (flag) {
             Iterable<Result<Item>> myObjects = listObjects(bucketName, prefix);
+            if(myObjects == null){
+                log.info("没有找到对象, listObjectProperties");
+                return listObjectProperties;
+            }
+            log.info("找到对象列表， {}",myObjects);
             for (Result<Item> result : myObjects) {
                 Item item = result.get();
                 FileVo fileVo = new FileVo();

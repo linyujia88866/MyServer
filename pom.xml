@@ -80,6 +80,16 @@
 			<version>5.1.49</version> <!-- 这里的x代表具体的版本号，例如5.1.49 -->
 		</dependency>
 		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<version>3.7.0</version> <!-- 请根据实际使用的ZooKeeper版本进行替换 -->
+		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.13.1</version>
+		</dependency>
+		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-devtools</artifactId>
 		    <optional>true</optional> <!-- 这个需要为 true 热部署才有效 -->
@@ -126,6 +136,22 @@
 			<artifactId>minio</artifactId>
 			<version>7.0.2</version>
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>io.minio</groupId>-->
+<!--			<artifactId>minio</artifactId>-->
+<!--			<version>8.5.6</version>-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>com.squareup.okhttp3</groupId>-->
+<!--					<artifactId>okhttp</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>com.squareup.okhttp3</groupId>-->
+<!--			<artifactId>okhttp</artifactId>-->
+<!--			<version>4.11.0</version>-->
+<!--		</dependency>-->
 		<!-- Apache POI -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>

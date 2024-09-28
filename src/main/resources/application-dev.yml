@@ -5,9 +5,9 @@ spring:
       max-file-size: 200MB
       max-request-size: 200MB
 minio:
-  host: http://47.109.79.50:9000
+  host: http://192.168.2.129:9000
 #  host: http://172.19.15.159:9000
   url: ${minio.host}/${minio.bucket}/
   access-key: minioadmin
-  secret-key: Liyan@9802
+  secret-key: minioadmin
   bucket: test
