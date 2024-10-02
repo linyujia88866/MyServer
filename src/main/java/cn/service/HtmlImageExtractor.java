@@ -23,6 +23,9 @@ public class HtmlImageExtractor {
 
         for (Element imgElement : imgElements) {
             String imageUrl = imgElement.attr("src");
+            if(!imageUrl.contains("pic-link/")){
+                continue;
+            }
             imageUrls.add(imageUrl.substring(imageUrl.indexOf("pic-link/")).replace("%2F","/"));
         }
 
