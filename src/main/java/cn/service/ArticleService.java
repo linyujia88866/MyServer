@@ -31,13 +31,22 @@ public class ArticleService {
         return articleMapper.getAllArticles(username);
     }
 
-    public List<ArticleVo> getAllArticles(String username, int publish) {
-        return articleMapper.getAllArticles_(username, publish);
+    public List<ArticleVo> getAllArticles(String username, int publish, Integer limit, Integer offset) {
+        return articleMapper.getAllArticles_(username, publish, limit, offset);
+    }
+
+    public Integer getAllArticlesCount(String username, int publish) {
+        return articleMapper.getAllArticlesCount_(username, publish);
     }
 
     public List<ArticleVo> getAllPubArticles(Integer limit, Integer offset) {
         log.info("limit, {}, offset, {}", limit, offset);
         return articleMapper.getAllPubArticles_(limit, offset);
+    }
+
+    public List<ArticleVo> getAllPubArticlesSearch(Integer limit, Integer offset,String name) {
+        log.info("limit, {}, offset, {}, name, {}", limit, offset, name);
+        return articleMapper.getAllPubArticlesSearch_(limit, offset, name);
     }
 
     public Integer getAllPubArticlesCount() {

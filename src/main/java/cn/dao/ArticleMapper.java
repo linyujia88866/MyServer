@@ -19,8 +19,14 @@ public interface ArticleMapper {
     @Select("select articleId, title, createdAt, readCount, likeCount, commentCount from articles where username = #{username} ORDER BY createdAt DESC")
     List<ArticleVo> getAllArticles(String username);
 
-    @Select("select articleId, title, createdAt, readCount, likeCount,goodCount, commentCount from articles where username = #{username} and publish = #{publish} ORDER BY createdAt DESC")
-    List<ArticleVo> getAllArticles_(String username, int publish);
+    @Select("select articleId, title, createdAt, readCount, likeCount,goodCount, commentCount from articles " +
+            "where username = #{username} and publish = #{publish} ORDER BY createdAt DESC " +
+            "LIMIT #{limit} OFFSET #{offset}")
+    List<ArticleVo> getAllArticles_(String username, int publish, Integer limit, Integer offset);
+
+    @Select("select COUNT(*) from articles " +
+            "where username = #{username} and publish = #{publish} ORDER BY createdAt DESC ")
+    Integer getAllArticlesCount_(String username, int publish);
 
     @Select("select articleId, title, createdAt, username, readCount, likeCount,goodCount, commentCount from articles " +
             "where publish = 1 and username <> 'admin' ORDER BY createdAt DESC LIMIT #{limit} OFFSET #{offset}")
@@ -28,6 +34,12 @@ public interface ArticleMapper {
 
     @Select("select COUNT(*) from articles where publish = 1 and username <> 'admin'")
     Integer getAllPubArticlesCount_();
+
+    @Select("select articleId, title, createdAt, username, readCount, likeCount,goodCount, commentCount from articles " +
+            "where publish = 1 and username <> 'admin' and title LIKE CONCAT('%', #{name}, '%')" +
+            "ORDER BY createdAt DESC " +
+            "LIMIT #{limit} OFFSET #{offset}")
+    List<ArticleVo> getAllPubArticlesSearch_(Integer limit, Integer offset, String name);
 
     @Select("SELECT articles.* FROM users " +
             "JOIN articles_users_like ON users.userId = articles_users_like.userId " +

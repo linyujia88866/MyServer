@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static cn.service.HtmlImageExtractor.extractImageUrls;
 import static cn.utils.requestUtils.getTokenFromRequest;
@@ -43,6 +42,9 @@ public class ArticleController {
     @ResponseBody
     public Result save (HttpServletRequest request,@RequestBody ArticleDto articledto) {
         String articleId = articledto.getArticleId();
+        if(articleId.length() != 36) {
+            return Result.error(400, "文章id错误");
+        }
 //        String articleId = UuidUtil.getUuid();
         String title = articledto.getTitle();
         boolean publish = articledto.getPublish();
@@ -180,9 +182,11 @@ public class ArticleController {
     }
     @GetMapping("/pubArticles")
     @ResponseBody
-    public Result getPublishArticles(HttpServletRequest request){
+    public Result getPublishArticles(HttpServletRequest request,
+                                     @RequestParam(value = "limit") Integer limit,
+                                     @RequestParam(value = "offset") Integer offset){
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
-        List<ArticleVo> res =  articleService.getAllArticles(username, 1);
+        List<ArticleVo> res =  articleService.getAllArticles(username, 1, limit, offset);
         log.info(res.toString());
         return Result.success(res);
     }
@@ -191,6 +195,18 @@ public class ArticleController {
     @ResponseBody
     public Result getAllPubArticles(@RequestParam(value = "limit") Integer limit, @RequestParam(value = "offset") Integer offset){
         List<ArticleVo> res =  articleService.getAllPubArticles(limit, offset);
+//        List<ArticleVo> filteredPets = res.stream()
+//                .filter(pet -> !"admin".equals(pet.getUsername()))
+//                .collect(Collectors.toList());
+        return Result.success(res);
+    }
+
+    @GetMapping("/AllPubArticles/search")
+    @ResponseBody
+    public Result getAllPubArticlesSearch(@RequestParam(value = "name") String name,
+                                          @RequestParam(value = "limit") Integer limit,
+                                          @RequestParam(value = "offset") Integer offset){
+        List<ArticleVo> res =  articleService.getAllPubArticlesSearch(limit, offset, name);
 //        List<ArticleVo> filteredPets = res.stream()
 //                .filter(pet -> !"admin".equals(pet.getUsername()))
 //                .collect(Collectors.toList());
@@ -224,9 +240,11 @@ public class ArticleController {
 
     @GetMapping("/priArticles")
     @ResponseBody
-    public Result getPrivateArticles(HttpServletRequest request){
+    public Result getPrivateArticles(HttpServletRequest request,
+                                     @RequestParam(value = "limit") Integer limit,
+                                     @RequestParam(value = "offset") Integer offset){
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
-        List<ArticleVo> res =  articleService.getAllArticles(username, 0);
+        List<ArticleVo> res =  articleService.getAllArticles(username, 0, limit, offset);
         for(ArticleVo articleVo: res){
              Timestamp timestamp = articleVo.getCreatedAt();
              Long x = timestamp.getTime();
@@ -236,7 +254,21 @@ public class ArticleController {
         return Result.success(res);
     }
 
+    @GetMapping("/priArticles/total")
+    @ResponseBody
+    public Result getPrivateArticlesCount(HttpServletRequest request){
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        Integer res =  articleService.getAllArticlesCount(username, 0);
+        return Result.success(res);
+    }
 
+    @GetMapping("/pubArticles/total")
+    @ResponseBody
+    public Result getPublishArticlesCount(HttpServletRequest request){
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        Integer res =  articleService.getAllArticlesCount(username, 1);
+        return Result.success(res);
+    }
     @GetMapping("/get/{articleId}")
     @ResponseBody
     public Result getArticleById(HttpServletRequest request, @PathVariable("articleId") String articleId){
