@@ -35,14 +35,25 @@ public class ArticleService {
         return articleMapper.getAllArticles_(username, publish);
     }
 
-    public List<ArticleVo> getAllPubArticles() {
-        return articleMapper.getAllPubArticles_();
+    public List<ArticleVo> getAllPubArticles(Integer limit, Integer offset) {
+        log.info("limit, {}, offset, {}", limit, offset);
+        return articleMapper.getAllPubArticles_(limit, offset);
     }
 
-    public List<ArticleVo> getMyFavoriteArticles(String username) {
+    public Integer getAllPubArticlesCount() {
+        return articleMapper.getAllPubArticlesCount_();
+    }
+
+    public List<ArticleVo> getMyFavoriteArticles(String username, Integer limit, Integer offset) {
         User user = userMapper.findByUser(username);
         String userId = user.getUserId();
-        return articleMapper.getMyFavoriteArticles(userId);
+        return articleMapper.getMyFavoriteArticles(userId, limit, offset);
+    }
+
+    public Integer getMyFavoriteArticlesCount(String username) {
+        User user = userMapper.findByUser(username);
+        String userId = user.getUserId();
+        return articleMapper.getMyFavoriteArticlesCount(userId);
     }
 
     public void saveArticle(String articleId, String title, Timestamp createdAt, String content, String username, boolean publish) {

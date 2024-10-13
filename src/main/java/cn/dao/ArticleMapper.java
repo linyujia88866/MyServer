@@ -22,15 +22,27 @@ public interface ArticleMapper {
     @Select("select articleId, title, createdAt, readCount, likeCount,goodCount, commentCount from articles where username = #{username} and publish = #{publish} ORDER BY createdAt DESC")
     List<ArticleVo> getAllArticles_(String username, int publish);
 
-    @Select("select articleId, title, createdAt, username, readCount, likeCount,goodCount, commentCount from articles where publish = 1 ORDER BY createdAt DESC")
-    List<ArticleVo> getAllPubArticles_();
+    @Select("select articleId, title, createdAt, username, readCount, likeCount,goodCount, commentCount from articles " +
+            "where publish = 1 and username <> 'admin' ORDER BY createdAt DESC LIMIT #{limit} OFFSET #{offset}")
+    List<ArticleVo> getAllPubArticles_(Integer limit, Integer offset);
+
+    @Select("select COUNT(*) from articles where publish = 1 and username <> 'admin'")
+    Integer getAllPubArticlesCount_();
 
     @Select("SELECT articles.* FROM users " +
             "JOIN articles_users_like ON users.userId = articles_users_like.userId " +
             "JOIN articles ON articles_users_like.articleId = articles.articleId " +
             "WHERE users.userId = #{userId} " +
+            "ORDER BY createdAt DESC " +
+            "LIMIT #{limit} OFFSET #{offset}")
+    List<ArticleVo> getMyFavoriteArticles(String userId, Integer limit, Integer offset);
+
+    @Select("SELECT COUNT(*) FROM users " +
+            "JOIN articles_users_like ON users.userId = articles_users_like.userId " +
+            "JOIN articles ON articles_users_like.articleId = articles.articleId " +
+            "WHERE users.userId = #{userId} " +
             "ORDER BY createdAt DESC")
-    List<ArticleVo> getMyFavoriteArticles(String userId);
+    Integer getMyFavoriteArticlesCount(String userId);
     //新增
     @Insert("insert into articles(articleId, title, createdAt, content, username, publish)" +
             "values  (#{articleId},#{title},#{createdAt},#{content},#{username},#{publish})")

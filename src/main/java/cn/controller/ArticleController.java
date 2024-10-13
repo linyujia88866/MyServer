@@ -1,6 +1,5 @@
 package cn.controller;
 
-
 import cn.dao.ArticleLinkMapper;
 import cn.dto.ArticleDto;
 import cn.entity.Article;
@@ -17,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static cn.service.HtmlImageExtractor.extractImageUrls;
 import static cn.utils.requestUtils.getTokenFromRequest;
@@ -189,16 +189,36 @@ public class ArticleController {
 
     @GetMapping("/AllPubArticles")
     @ResponseBody
-    public Result getAllPubArticles(){
-        List<ArticleVo> res =  articleService.getAllPubArticles();
+    public Result getAllPubArticles(@RequestParam(value = "limit") Integer limit, @RequestParam(value = "offset") Integer offset){
+        List<ArticleVo> res =  articleService.getAllPubArticles(limit, offset);
+//        List<ArticleVo> filteredPets = res.stream()
+//                .filter(pet -> !"admin".equals(pet.getUsername()))
+//                .collect(Collectors.toList());
+        return Result.success(res);
+    }
+
+    @GetMapping("/AllPubArticles/total")
+    @ResponseBody
+    public Result getAllPubArticlesCount(){
+        Integer res =  articleService.getAllPubArticlesCount();
         return Result.success(res);
     }
 
     @GetMapping("/MyFavoriteArticles")
     @ResponseBody
-    public Result getMyFavoriteArticles(HttpServletRequest request){
+    public Result getMyFavoriteArticles(HttpServletRequest request,
+                                        @RequestParam(value = "limit") Integer limit,
+                                        @RequestParam(value = "offset") Integer offset){
         String username = JWTUtils.parseJWT(getTokenFromRequest(request));
-        List<ArticleVo> res =  articleService.getMyFavoriteArticles( username);
+        List<ArticleVo> res =  articleService.getMyFavoriteArticles(username, limit, offset);
+        return Result.success(res);
+    }
+
+    @GetMapping("/MyFavoriteArticles/total")
+    @ResponseBody
+    public Result getMyFavoriteArticlesCount(HttpServletRequest request){
+        String username = JWTUtils.parseJWT(getTokenFromRequest(request));
+        Integer res =  articleService.getMyFavoriteArticlesCount(username);
         return Result.success(res);
     }
 
