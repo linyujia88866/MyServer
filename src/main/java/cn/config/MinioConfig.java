@@ -458,7 +458,7 @@ public class MinioConfig implements InitializingBean {
      */
     public boolean isObjectExist(String bucketName, String objectName) throws Exception {
         boolean flag = bucketExists(bucketName);
-        String url = "";
+        String url;
         if (flag) {
             try {
                 url = minioClient.getObjectUrl(bucketName, objectName);

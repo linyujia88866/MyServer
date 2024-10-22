@@ -1,7 +1,5 @@
 package cn.dao;
 
-import cn.entity.Article;
-import cn.vo.ArticleVo;
 import cn.vo.LinkVo;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;

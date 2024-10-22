@@ -21,11 +21,11 @@ public class Result<T> {
     }
 
     public static Result success() {
-        return new Result(200,"操作成功",null);
+        return new Result<>(200,"操作成功",null);
     }
 
     public static Result error(int code, String message) {
-        return new Result(code, message,null);
+        return new Result<>(code, message,null);
     }
 
 

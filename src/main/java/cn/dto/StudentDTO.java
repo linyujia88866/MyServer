@@ -4,11 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-/**
- * @Author: 1399543132@qq.com
- * @Date: 2024/01/21/20:16
- * @Description: 学生表实体类
- */
+
 @Data
 public class StudentDTO {
 
