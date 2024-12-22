@@ -1,4 +1,4 @@
-package cn.dto;
+package cn.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,13 +6,12 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RecordDto {
-	private Integer spend;
-	private Integer id;
-	private String cname;
-	private String comment;
-	private Date date;
+public class ReportVo {
+    private Integer spend;
+    private Date date;
 }
+

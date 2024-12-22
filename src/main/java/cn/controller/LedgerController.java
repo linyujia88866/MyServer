@@ -3,9 +3,9 @@ package cn.controller;
 import cn.dao.CategoryDao;
 import cn.dao.RecordDao;
 import cn.dto.CategoryDto;
-
 import cn.dto.EditCategoryDto;
 import cn.dto.RecordDto;
+import cn.dto.ReportDto;
 import cn.entity.Category;
 import cn.entity.Record;
 import cn.entityConvert.CategoryMapper;
@@ -14,22 +14,19 @@ import cn.utils.JWTUtils;
 import cn.vo.CategoryVo;
 import cn.vo.RecordVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static cn.utils.RecordVoStatistics.generateMonthlyReport;
 import static cn.utils.requestUtils.getTokenFromRequest;
 
 @RestController
@@ -93,6 +90,53 @@ public class LedgerController {
         return Result.success(categoryDao.delete(queryWrapper));
     }
 
+    @PostMapping("/report/month")
+    @ResponseBody
+    public Result report_month (HttpServletRequest request, @RequestBody ReportDto reportDto) {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        int month = reportDto.getMonth();
+        int year = reportDto.getYear();
+        List<RecordVo> res = recordDao.getAllRecordInMonth(username, formatYearMonth(year, month));
+        Map<String, Double> voList = generateMonthlyReport(res, year, month);
+        return Result.success(voList);
+    }
+
+    @PostMapping("/report/month/total")
+    @ResponseBody
+    public Result report_month_total (HttpServletRequest request, @RequestBody ReportDto reportDto) {
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        int month = reportDto.getMonth();
+        int year = reportDto.getYear();
+        List<RecordVo> res = recordDao.getAllRecordInMonth(username, formatYearMonth(year, month));
+        Map<String, Double> voList = generateMonthlyReport(res, year, month);
+        double resDouble = 0;
+        for (Map.Entry<String, Double> entry : voList.entrySet()) {
+            resDouble = resDouble + entry.getValue();
+        }
+        return Result.success(resDouble);
+    }
+
+    public String formatMonth(int number) {
+        return String.format("%02d", number);
+    }
+
+    public String formatYear(int number) {
+        return String.valueOf(number);
+    }
+
+    public String formatYearMonth(int number, int number2) {
+        return formatYear(number) + "-" + formatMonth(number2);
+    }
+
+    @PostMapping("/record/delete")
+    @ResponseBody
+    public Result deleteRecord (HttpServletRequest request, @RequestBody RecordDto recordDto) {
+        log.info(String.valueOf(recordDto.getId()));
+        return Result.success(recordDao.deleteById(recordDto.getId()));
+    }
+
     @PostMapping("/record/add")
     @ResponseBody
     public Result saveRecord (HttpServletRequest request, @RequestBody RecordDto recordDto) {
@@ -106,13 +150,41 @@ public class LedgerController {
             return Result.error(80002, "分类不存在");
         }
         record.setCid(category.getId());
-        record.setDate(Date.valueOf(LocalDate.now()));
+        record.setDate(recordDto.getDate());
         record.setComment(recordDto.getComment());
         record.setSpend(recordDto.getSpend());
         recordDao.insert(record);
         return Result.success();
     }
+    @PostMapping("/record/edit")
+    @ResponseBody
+    public Result editRecord (HttpServletRequest request, @RequestBody RecordDto recordDto) {
+        Record record = recordDao.selectById(recordDto.getId());
+        if(record == null) {
+            return Result.error(80004, "消费记录不存在");
+        }
+        Category category = categoryDao.selectById(record.getCid());
 
+//        Record record = new Record();
+        String token = getTokenFromRequest(request);
+        String username = JWTUtils.parseJWT(token);
+        if(!Objects.equals(category.getUsername(), username)) {
+            return Result.error(80003, "你没有权限修改该消费记录");
+        }
+        record.setSpend(recordDto.getSpend());
+        record.setComment(recordDto.getComment());
+        record.setDate(recordDto.getDate());
+
+        QueryWrapper<Category> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("name", recordDto.getCname()).eq("username", username);
+        Category category2 = categoryDao.selectOne(queryWrapper);
+        if(category2 == null) {
+            return Result.error(80002, "分类不存在");
+        }
+        record.setCid(category2.getId());
+        recordDao.updateById(record);
+        return Result.success();
+    }
     @GetMapping("/category/all")
     @ResponseBody
     public Result<List<CategoryVo>> get_all (HttpServletRequest request) {

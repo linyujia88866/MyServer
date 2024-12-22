@@ -9,9 +9,9 @@ import java.sql.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RecordDto {
-	private Integer spend;
-	private Integer id;
+public class ReportDto {
+	private Integer month;
+	private Integer year;
 	private String cname;
 	private String comment;
 	private Date date;

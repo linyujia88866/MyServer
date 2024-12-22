@@ -12,6 +12,7 @@ import java.sql.Date;
 @NoArgsConstructor
 public class RecordVo {
     private Integer spend;
+    private Integer id;
     private String name;
     private String comment;
     private Date date;
