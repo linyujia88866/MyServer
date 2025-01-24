@@ -1,6 +1,5 @@
 package cn.dao;
 
-
 import cn.entity.Article;
 import cn.entity.ArticleWithUser;
 import cn.vo.ArticleVo;
@@ -28,15 +27,22 @@ public interface ArticleMapper {
             "where username = #{username} and publish = #{publish} ORDER BY createdAt DESC ")
     Integer getAllArticlesCount_(String username, int publish);
 
+//    @Select("select articleId, title, createdAt, username, readCount, likeCount,goodCount, commentCount from articles " +
+//            "where publish = 1 and username <> 'admin' ORDER BY createdAt DESC LIMIT #{limit} OFFSET #{offset}")
     @Select("select articleId, title, createdAt, username, readCount, likeCount,goodCount, commentCount from articles " +
-            "where publish = 1 and username <> 'admin' ORDER BY createdAt DESC LIMIT #{limit} OFFSET #{offset}")
+            "where publish = 1 ORDER BY createdAt DESC LIMIT #{limit} OFFSET #{offset}")
     List<ArticleVo> getAllPubArticles_(Integer limit, Integer offset);
 
-    @Select("select COUNT(*) from articles where publish = 1 and username <> 'admin'")
+//    @Select("select COUNT(*) from articles where publish = 1 and username <> 'admin'")
+    @Select("select COUNT(*) from articles where publish = 1")
     Integer getAllPubArticlesCount_();
 
+//    @Select("select articleId, title, createdAt, username, readCount, likeCount,goodCount, commentCount from articles " +
+//            "where publish = 1 and username <> 'admin' and title LIKE CONCAT('%', #{name}, '%')" +
+//            "ORDER BY createdAt DESC " +
+//            "LIMIT #{limit} OFFSET #{offset}")
     @Select("select articleId, title, createdAt, username, readCount, likeCount,goodCount, commentCount from articles " +
-            "where publish = 1 and username <> 'admin' and title LIKE CONCAT('%', #{name}, '%')" +
+            "where publish = 1 and title LIKE CONCAT('%', #{name}, '%')" +
             "ORDER BY createdAt DESC " +
             "LIMIT #{limit} OFFSET #{offset}")
     List<ArticleVo> getAllPubArticlesSearch_(Integer limit, Integer offset, String name);
